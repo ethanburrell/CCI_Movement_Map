@@ -42,6 +42,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
   <script src="puma-data.js" > </script>
+  <script src="sf_county.js" > </script>
+
 
 
   <script>
@@ -68,13 +70,13 @@
     };
     info.update = function(props) {
       this._div.innerHTML =
-        "<h4>US Population Density</h4>" +
+        "<h4># of people that were moved from SF</h4>" +
         (props
           ? "<b>" +
-            props.name +
+            props.NAME10 +
             "</b><br />" +
-            props.density +
-            " people / mi<sup>2</sup>"
+            props.sf_li_all +
+            " people"
           : "Hover over a state");
     };
     info.addTo(map);
@@ -94,7 +96,6 @@
         : d > 800 ? "#FEB24C"
         : d > 400 ? "#FED976"
         : "#FFEDA0";
-
     }
     function style(feature) {
       return {
@@ -103,7 +104,7 @@
         color: "white",
         dashArray: "3",
         fillOpacity: 0.7,
-        fillColor: getColor(feature.properties.sf_li_all)
+        fillColor: getColor(feature.properties.sf_li_all)//feature.properties.sf_li_all
       };
     }
     //THE CODE THAT I AM WRITING TO HAVE YOU BE
@@ -179,6 +180,8 @@
           lastclick = e.target;
      });*/
     }
+
+    //USE county_data or pumaData or county_data
     geojson = L.geoJson(pumaData, {
       style: style,
       onEachFeature: onEachFeature
