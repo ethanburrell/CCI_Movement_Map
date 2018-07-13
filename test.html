@@ -34,6 +34,15 @@
       float: left;
       margin-right: 8px;
       opacity: 0.7;
+    }
+    .exit {
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
 </style>
 </head>
 <body>
@@ -42,7 +51,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
   <script src="puma-data.js" > </script>
-  <script src="sf_county.js" > </script>
+  <script src="county-data.js" > </script>
 
 
 
@@ -131,6 +140,11 @@
     function selectState(e) {
       if (lastclick == null) {
         console.log("First Click", lastclick)
+        window.map.removeLayer(geojson);
+        geojson = L.geoJson(pumaData, {
+          style: style,
+          onEachFeature: onEachFeature
+        }).addTo(map);
       } else {
       geojson.resetStyle(lastclick);
       info.update(geojson);
@@ -182,7 +196,7 @@
     }
 
     //USE county_data or pumaData or county_data
-    geojson = L.geoJson(pumaData, {
+    geojson = L.geoJson(county_data, {
       style: style,
       onEachFeature: onEachFeature
     }).addTo(map);
