@@ -35,7 +35,8 @@
       margin-right: 8px;
       opacity: 0.7;
     }
-    .exit {
+    .filter {
+      test-align: right;
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
       background: white;
@@ -56,6 +57,38 @@
 
 
   <script>
+
+    function selecteDataSet(county_name) {
+      county_name = county_name.toLowerCase();
+      var county_abbr = {
+      "alameda": "a",
+      "napa": "n",
+      "santa clara": "sc",
+      "contra costa": "cc",
+      "san francisco": "sf",
+      "solano": "so",
+      "marin": "ma",
+      "san mateo": "sm",
+      "sonoma": "so",
+      "sf": "sf",
+      "cc": "cc",
+      "sm": "sm",
+      "sc": "sc"
+      }
+
+      return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" +document.getElementById("race").value
+
+    }
+    var dataset_forcolor = ""
+    function displayDataSet(dataset) {
+      console.log(dataset);
+      dataset_forcolor = dataset;
+      window.map.removeLayer(geojson);
+      geojson = L.geoJson(pumaData, {
+        style: style,
+        onEachFeature: onEachFeature
+      }).addTo(map);
+    }
 
 
     var map = L.map("map").setView([37.7749, -122.4194], 10);
@@ -78,17 +111,60 @@
       return this._div;
     };
     info.update = function(props) {
+      if (selectedLayer) {
       this._div.innerHTML =
         "<h4># of people that were moved from SF</h4>" +
         (props
           ? "<b>" +
             props.NAME10 +
             "</b><br />" +
-            props.sf_li_all +
+            props[dataset_forcolor] +
             " people"
           : "Hover over a state");
+      } else {
+        this._div.innerHTML =
+          (props
+            ? "<b>" +
+              props.county +
+              " county"
+            : "Hover over a county");
+      }
     };
     info.addTo(map);
+    // MY CODE
+    // ADD PART TO MAP THAT ALLOWS USER TO FILTER THE INFORMATION
+    // control that shows state info on hover
+    var filter = L.control({position: 'bottomleft'});
+    filter.onAdd = function(map) {
+      this._div = L.DomUtil.create("div", "filter");
+      this.onNewCounty();
+      return this._div;
+    };
+    filter.onNewCounty = function(props) {
+      this._div.innerHTML =
+  `<select id="race">
+  <option value='all'>All</option>
+  <option value='asn'>Asian</option>
+  <option value='blk'>Black</option>
+  <option value='hsp'>Hispanic</option>
+  <option value='poc'>People of Color</option>
+  <option value='wht'>White</option>
+  </select>
+  <br>
+  <select id="income">
+  <option value='all'>All</option>
+  <option value='h'>High</option>
+  <option value='m'>Middle</option>
+  <option value='lw'>Low</option>
+  <option value='li'>li</option>
+  <option value='vl'>Very Low</option>
+  <option value='el'>Extremley Low</option>
+  </select>
+  `
+    };
+    filter.addTo(map);
+
+
     // get color depending on population density value
     function getColor(d) {
 
@@ -113,14 +189,13 @@
         color: "white",
         dashArray: "3",
         fillOpacity: 0.7,
-        fillColor: getColor(feature.properties.sf_li_all)//feature.properties.sf_li_all
+        fillColor: getColor(feature.properties[dataset_forcolor])//feature.properties.sf_li_all
       };
     }
     //THE CODE THAT I AM WRITING TO HAVE YOU BE
     // ABLE TO SELECT A STATE AND THEN SEE THE DISPALCEMENT
     // AMOUNTS OF OTHER PUMAS
     function viewData(e) {
-
       var layer = e.target;
       layer.setStyle({
         weight: 5,
@@ -128,55 +203,34 @@
         dashArray: "",
         fillOpacity: 0.7
       });
+
       if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
         layer.bringToFront();
       }
       info.update(layer.feature.properties);
     }
-    var geojson;
-    var lastclick = null;
-    var selected = null;
+
     var selectedLayer = null;
     function selectState(e) {
-      if (lastclick == null) {
-        console.log("First Click", lastclick)
-        window.map.removeLayer(geojson);
-        geojson = L.geoJson(pumaData, {
-          style: style,
-          onEachFeature: onEachFeature
-        }).addTo(map);
-      } else {
-      geojson.resetStyle(lastclick);
-      info.update(geojson);
-      console.log("second click", lastclick);
-    }
+      selectedLayer = e.target;
+      console.log(e.target.feature.properties.county);
+      var dataset = selecteDataSet(e.target.feature.properties.county);
+      displayDataSet(dataset);
 
-      var layer = e.target;
-      selected = e.target;
-      lastclick = e.target;
-      layer.setStyle({
-        weight: 5,
-        color: "#666",
-        dashArray: "",
-        fillOpacity: 0.7
-      });
-      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        layer.bringToFront();
-      }
-      info.update(layer.feature.properties);
-      //map.fitBounds(e.target.getBounds());
-      selectedLayer = layer;
     }
 
 
     function resetHighlight(e) {
+      geojson.resetStyle(e.target);
+      info.update();
+      /*
       if (e.target != lastclick) {
       geojson.resetStyle(e.target);
       if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        selectedLayer.bringToFront();
+        //selectedLayer.bringToFront();
       }
       info.update(selectedLayer.feature.properties);
-    }
+    }*/
     }
 
     // BACK TO NORMAL CODE
