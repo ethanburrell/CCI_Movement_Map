@@ -58,6 +58,7 @@
 
   <script>
 
+
     function selecteDataSet(county_name) {
       county_name = county_name.toLowerCase();
       var county_abbr = {
@@ -75,13 +76,15 @@
       "sm": "sm",
       "sc": "sc"
       }
-
-      return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" +document.getElementById("race").value
+      if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
+        return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
+      }
 
     }
     var dataset_forcolor = ""
     function displayDataSet(dataset) {
       console.log(dataset);
+      generateCutoffs(dataset);
       dataset_forcolor = dataset;
       window.map.removeLayer(geojson);
       geojson = L.geoJson(pumaData, {
@@ -90,6 +93,34 @@
       }).addTo(map);
     }
 
+    function resetCounty() {
+      window.map.removeLayer(geojson);
+      //legend.removeLayer(map);
+      selectedLayer = null;
+      geojson = L.geoJson(county_data, {
+        style: style,
+        onEachFeature: onEachFeature
+      }).addTo(map);
+    }
+
+    var colorCutoffs = [];
+    function generateCutoffs(dataset){
+      arr = [];
+      for (i in pumaData["features"]) {
+          arr.push(parseInt(pumaData["features"][i]["properties"][dataset]))
+      }
+      range = Math.max(...arr) - 0; //Math.min(arr);
+      bucket_width = parseInt(range / 8);
+      var curr = 0;
+      cutoffs = []
+      for (var i = 0; i < 8; i++) {
+        cutoffs.push(curr);
+        curr = curr + bucket_width;
+      }
+      //return cutoffs;
+      console.log(cutoffs);
+      colorCutoffs = cutoffs;
+    }
 
     var map = L.map("map").setView([37.7749, -122.4194], 10);
     L.tileLayer(
@@ -142,7 +173,10 @@
     };
     filter.onNewCounty = function(props) {
       this._div.innerHTML =
-  `<select id="race">
+  `
+  <button onclick="resetCounty()">Choose new county</button>
+  <br>
+  <select id="race">
   <option value='all'>All</option>
   <option value='asn'>Asian</option>
   <option value='blk'>Black</option>
@@ -167,19 +201,18 @@
 
     // get color depending on population density value
     function getColor(d) {
-
-      return d > 2800
+      return d > colorCutoffs[7]
         ? "#800026"
-        : d > 2400
+        : d > colorCutoffs[6]
         ? "#BD0026"
-        : d > 2000
+        : d > colorCutoffs[5]
         ? "#E31A1C"
-        : d > 1600
+        : d > colorCutoffs[4]
         ? "#FC4E2A"
-        : d > 1200
+        : d > colorCutoffs[3]
         ? "#FD8D3C"
-        : d > 800 ? "#FEB24C"
-        : d > 400 ? "#FED976"
+        : d > colorCutoffs[2] ? "#FEB24C"
+        : d > colorCutoffs[1] ? "#FED976"
         : "#FFEDA0";
     }
     function style(feature) {
@@ -216,7 +249,8 @@
       console.log(e.target.feature.properties.county);
       var dataset = selecteDataSet(e.target.feature.properties.county);
       displayDataSet(dataset);
-
+      //legend.update(map);
+      legend.addTo(map);
     }
 
 
@@ -262,10 +296,11 @@
     legend.onAdd = function(map) {
       var div = L.DomUtil.create("div", "info legend"),
         //grades = [0, 10, 20, 50, 100, 200, 500, 1000],
-        grades = [0, 400, 800, 1200, 1600, 2000, 2400, 2800],
+        //grades = [0, 400, 800, 1200, 1600, 2000, 2400, 2800], //colorCutoffs
+        grades = colorCutoffs,
         labels = [],
-        from,
-        to;
+        from = 0,
+        to = 0;
       for (var i = 0; i < grades.length; i++) {
         from = grades[i];
         to = grades[i + 1];
@@ -279,8 +314,9 @@
       }
       div.innerHTML = labels.join("<br>");
       return div;
+
     };
-    legend.addTo(map);
+    //legend.addTo(map);
   </script>
 </body>
 </html>
