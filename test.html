@@ -58,7 +58,7 @@
 
   <script>
 
-
+    var infoSentece = null;
     function selecteDataSet(county_name) {
       county_name = county_name.toLowerCase();
       var county_abbr = {
@@ -77,11 +77,12 @@
       "sc": "sc"
       }
       if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
+        infoSentece = createInfoSentence(document.getElementById("income").value, document.getElementById("race").value, county_name);
         return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
       }
 
     }
-    var dataset_forcolor = ""
+    var dataset_forcolor = "";
     function displayDataSet(dataset) {
       console.log(dataset);
       generateCutoffs(dataset);
@@ -93,10 +94,30 @@
       }).addTo(map);
     }
 
+    function updateDataset() {
+      var dataset = selecteDataSet(selectedLayer.feature.properties.county);
+      displayDataSet(dataset);
+      //legend.update(map);
+      legend.addTo(map);
+    }
+
+    function createInfoSentence(income, race, county) {
+      if (income == "all" && race == "all") {
+          return "All people who moved from " + county;
+      } else if (income == "all") {
+          return "All "+ race +" who moved from " + county;
+      } else if (race == "all") {
+          return "All "+ income +" income who moved from " + county;
+      } else {
+          return income +" income "+ race +" who moved from " + county;
+      }
+    }
+
     function resetCounty() {
       window.map.removeLayer(geojson);
       //legend.removeLayer(map);
       selectedLayer = null;
+      infoSentece = null;
       geojson = L.geoJson(county_data, {
         style: style,
         onEachFeature: onEachFeature
@@ -142,9 +163,10 @@
       return this._div;
     };
     info.update = function(props) {
-      if (selectedLayer) {
+      if (selectedLayer && infoSentece) {
       this._div.innerHTML =
-        "<h4># of people that were moved from SF</h4>" +
+        //"<h4># of people that were moved from SF</h4>" +
+        infoSentece + "<br>" +
         (props
           ? "<b>" +
             props.NAME10 +
@@ -176,7 +198,7 @@
   `
   <button onclick="resetCounty()">Choose new county</button>
   <br>
-  <select id="race">
+  <select id="race" onchange="updateDataset()">
   <option value='all'>All</option>
   <option value='asn'>Asian</option>
   <option value='blk'>Black</option>
@@ -185,7 +207,7 @@
   <option value='wht'>White</option>
   </select>
   <br>
-  <select id="income">
+  <select id="income" onchange="updateDataset()">
   <option value='all'>All</option>
   <option value='h'>High</option>
   <option value='m'>Middle</option>
