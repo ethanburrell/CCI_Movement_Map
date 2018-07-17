@@ -76,10 +76,10 @@
       "sm": "sm",
       "sc": "sc"
       }
-      if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
+      //if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
         infoSentece = createInfoSentence(document.getElementById("income").value, document.getElementById("race").value, county_name);
         return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
-      }
+      //}
 
     }
     var dataset_forcolor = "";
@@ -202,7 +202,7 @@
   <option value='all'>All</option>
   <option value='asn'>Asian</option>
   <option value='blk'>Black</option>
-  <option value='hsp'>Hispanic</option>
+  <option value='hsp'>Latinx</option>
   <option value='poc'>People of Color</option>
   <option value='wht'>White</option>
   </select>
@@ -234,7 +234,8 @@
         : d > colorCutoffs[3]
         ? "#FD8D3C"
         : d > colorCutoffs[2] ? "#FEB24C"
-        : d > colorCutoffs[1] ? "#FED976"
+        //: d > colorCutoffs[1] ? "#FED976"
+        : d > 1 ? "#FED976"
         : "#FFEDA0";
     }
     function style(feature) {
