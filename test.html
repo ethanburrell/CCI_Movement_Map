@@ -131,10 +131,10 @@
           arr.push(parseInt(pumaData["features"][i]["properties"][dataset]))
       }
       range = Math.max(...arr) - 0; //Math.min(arr);
-      bucket_width = parseInt(range / 8);
+      bucket_width = parseInt(range / 7);
       var curr = 0;
-      cutoffs = []
-      for (var i = 0; i < 8; i++) {
+      cutoffs = [0]
+      for (var i = 1; i < 8; i++) {
         cutoffs.push(curr);
         curr = curr + bucket_width;
       }
@@ -236,7 +236,7 @@
         : d > colorCutoffs[2] ? "#FEB24C"
         //: d > colorCutoffs[1] ? "#FED976"
         : d > 1 ? "#FED976"
-        : "#FFEDA0";
+        : "#ffedc8"; // #FFEDA0
     }
     function style(feature) {
       return {
@@ -324,16 +324,33 @@
         labels = [],
         from = 0,
         to = 0;
-      for (var i = 0; i < grades.length; i++) {
-        from = grades[i];
-        to = grades[i + 1];
         labels.push(
           '<i style="background:' +
             getColor(from + 1) +
             '"></i> ' +
-            from +
-            (to ? "&ndash;" + to : "+")
+            from
         );
+      for (var i = 1; i < grades.length; i++) {
+        from = grades[i];
+        to = grades[i + 1];
+        if (from == 0) {
+          labels.push(
+            '<i style="background:' +
+              getColor(from + 2) +
+              '"></i> ' +
+              parseInt(from + 1) +
+              (to ? "&ndash;" + to : "+")
+          );
+        } else {
+          labels.push(
+            '<i style="background:' +
+              getColor(from + 1) +
+              '"></i> ' +
+              from +
+              (to ? "&ndash;" + to : "+")
+          );
+        }
+
       }
       div.innerHTML = labels.join("<br>");
       return div;
