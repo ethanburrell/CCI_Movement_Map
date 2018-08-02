@@ -101,15 +101,43 @@
       legend.addTo(map);
     }
 
+    function toTitleCase(str) {
+        return str.replace(/\w\S*/g, function(txt){
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
+    }
+
     function createInfoSentence(income, race, county) {
-      if (income == "all" && race == "all") {
-          return "All people who moved from " + county;
-      } else if (income == "all") {
-          return "All "+ race +" who moved from " + county;
-      } else if (race == "all") {
-          return "All "+ income +" income who moved from " + county;
+    county = toTitleCase(county);
+    var income_abbr = {
+        "el": "Extremely Low [0%-30% AMI]",
+        "vl": "Very Low [30%-50% AMI]",
+        "li": "Low [50%-80% AMI]",
+        "lw": "Low [<80% AMI]",
+        "m": "Middle [80%-120% AMI]",
+        "h": "High [>120% AMI]",
+        "all": "All"
+    }
+    i = income;
+    income = income_abbr[income];
+    var race_abbr = {
+        "wht": "White",
+        "hsp": "Latinx",
+        "blk": "Black",
+        "asn": "Asian",
+        "poc": "People Of Color",
+        "all": "All"
+    }
+    r = race;
+    race = race_abbr[race]
+      if (i == "all" && r == "all") {
+          return "All people who moved from " + county + " County";
+      } else if (i == "all") {
+          return "All "+ race +" who moved from " + county + " County";
+      } else if (r == "all") {
+          return "All "+ income +" Income who moved from " + county + " County";
       } else {
-          return income +" income "+ race +" who moved from " + county;
+          return income +" Income "+ race +" who moved from " + county + " County";
       }
     }
 
@@ -141,6 +169,7 @@
       //return cutoffs;
       console.log(cutoffs);
       colorCutoffs = cutoffs;
+      //colorCutoffs = [0, 200, 400, 600, 800, 1000, 1200, 1600];
     }
 
     var map = L.map("map").setView([37.7749, -122.4194], 10);
@@ -209,12 +238,12 @@
   <br>
   <select id="income" onchange="updateDataset()">
   <option value='all'>All</option>
-  <option value='h'>High</option>
-  <option value='m'>Middle</option>
-  <option value='lw'>Low</option>
-  <option value='li'>li</option>
-  <option value='vl'>Very Low</option>
-  <option value='el'>Extremley Low</option>
+  <option value='h'>High [>120% AMI]</option>
+  <option value='m'>Middle [80%-120% AMI]</option>
+  <option value='lw'>Low [<80% AMI]</option>
+  <option value='li'>Low [50%-80% AMI]</option>
+  <option value='vl'>Very Low [30%-50% AMI]</option>
+  <option value='el'>Extremley Low [0%-30% AMI]</option>
   </select>
   `
     };
@@ -223,17 +252,18 @@
 
     // get color depending on population density value
     function getColor(d) {
-      return d > colorCutoffs[7]
+      var grades = [0, 200, 400, 600, 800, 1000, 1200, 1600];
+      return d > grades[7]
         ? "#800026"
-        : d > colorCutoffs[6]
+        : d > grades[6]
         ? "#BD0026"
-        : d > colorCutoffs[5]
+        : d > grades[5]
         ? "#E31A1C"
-        : d > colorCutoffs[4]
+        : d > grades[4]
         ? "#FC4E2A"
-        : d > colorCutoffs[3]
+        : d > grades[3]
         ? "#FD8D3C"
-        : d > colorCutoffs[2] ? "#FEB24C"
+        : d > grades[2] ? "#FEB24C"
         //: d > colorCutoffs[1] ? "#FED976"
         : d > 1 ? "#FED976"
         : "#ffedc8"; // #FFEDA0
@@ -319,8 +349,8 @@
     legend.onAdd = function(map) {
       var div = L.DomUtil.create("div", "info legend"),
         //grades = [0, 10, 20, 50, 100, 200, 500, 1000],
-        //grades = [0, 400, 800, 1200, 1600, 2000, 2400, 2800], //colorCutoffs
-        grades = colorCutoffs,
+        grades = [0, 200, 400, 600, 800, 1000, 1200, 1600], //colorCutoffs
+        //grades = colorCutoffs,
         labels = [],
         from = 0,
         to = 0;
