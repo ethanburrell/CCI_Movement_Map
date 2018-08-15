@@ -19,6 +19,16 @@
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
       border-radius: 5px;
     }
+    .distribution {
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      float: left;
+      text-align: left;
+    }
     .info h4 {
       margin: 0 0 5px;
       color: #777;
@@ -36,7 +46,7 @@
       opacity: 0.7;
     }
     .filter {
-      test-align: right;
+      text-align: left;
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
       background: white;
@@ -59,23 +69,25 @@
   <script>
 
     var infoSentece = null;
+    var county_abbr = {
+    "alameda": "a",
+    "napa": "n",
+    "santa clara": "sc",
+    "contra costa": "cc",
+    "san francisco": "sf",
+    "solano": "so",
+    "marin": "ma",
+    "san mateo": "sm",
+    "sonoma": "so",
+    "sf": "sf",
+    "cc": "cc",
+    "sm": "sm",
+    "sc": "sc"
+    }
+    var county_current = "";
     function selecteDataSet(county_name) {
       county_name = county_name.toLowerCase();
-      var county_abbr = {
-      "alameda": "a",
-      "napa": "n",
-      "santa clara": "sc",
-      "contra costa": "cc",
-      "san francisco": "sf",
-      "solano": "so",
-      "marin": "ma",
-      "san mateo": "sm",
-      "sonoma": "so",
-      "sf": "sf",
-      "cc": "cc",
-      "sm": "sm",
-      "sc": "sc"
-      }
+      county_current = county_name;
       //if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
         infoSentece = createInfoSentence(document.getElementById("income").value, document.getElementById("race").value, county_name);
         return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
@@ -213,6 +225,23 @@
       }
     };
     info.addTo(map);
+    // =============================================
+    // SHOWS INSTATE / OUT OF STATE DISTRIBUTION
+    // =============================================
+    var stateDistribution = L.control({ position: "topleft" });
+    stateDistribution.onAdd = function(map) {
+      this._div = L.DomUtil.create("div", "distribution");
+      this.click();
+      return this._div;
+    };
+    stateDistribution.click = function(props) {
+      this._div.innerHTML =
+        "Distribution of instate to out of state for " + county_current + "<br>" +
+        "13 counties: NA" + "<br>" +
+        "CA: NA" +  "<br>" +
+        "Not - CA: NA";
+    };
+    stateDistribution.addTo(map);
     // MY CODE
     // ADD PART TO MAP THAT ALLOWS USER TO FILTER THE INFORMATION
     // control that shows state info on hover
@@ -304,6 +333,7 @@
       var dataset = selecteDataSet(e.target.feature.properties.county);
       displayDataSet(dataset);
       //legend.update(map);
+      stateDistribution.click(dataset);
       legend.addTo(map);
     }
 
