@@ -19,6 +19,7 @@
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
       border-radius: 5px;
     }
+
     .distribution {
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
@@ -155,6 +156,10 @@
 
     function resetCounty() {
       window.map.removeLayer(geojson);
+      map.removeControl(stateDistribution);
+      map.removeControl(legend);
+      map.removeControl(info);
+
       //legend.removeLayer(map);
       selectedLayer = null;
       infoSentece = null;
@@ -162,6 +167,8 @@
         style: style,
         onEachFeature: onEachFeature
       }).addTo(map);
+      info.addTo(map);
+      info.addTo(desc);
     }
 
     var colorCutoffs = [];
@@ -226,6 +233,25 @@
     };
     info.addTo(map);
     // =============================================
+    // SHOWS DESCRIPTION OF DATASET BEFORE CLICKING ON A COUNTY
+    // =============================================
+    var desc = L.control({ position: "bottomright" });
+    desc.onAdd = function(map) {
+      this._div = L.DomUtil.create("div", "info");
+      this.update();
+      return this._div;
+    };
+    desc.update = function() {
+      this._div.innerHTML =
+        //"<h4># of people that were moved from SF</h4>" +
+        "Descrition of the Dataset" + "<br>" +
+        `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+         Duis aute irure dolor in reprehenderit in voluptate velit esse `;
+    };
+    desc.addTo(map);
+    // =============================================
     // SHOWS INSTATE / OUT OF STATE DISTRIBUTION
     // =============================================
     var stateDistribution = L.control({ position: "topleft" });
@@ -235,13 +261,15 @@
       return this._div;
     };
     stateDistribution.click = function(props) {
+      //if (selectedLayer != null) {
       this._div.innerHTML =
         "Distribution of instate to out of state for " + county_current + "<br>" +
         "13 counties: NA" + "<br>" +
         "CA: NA" +  "<br>" +
         "Not - CA: NA";
+
     };
-    stateDistribution.addTo(map);
+
     // MY CODE
     // ADD PART TO MAP THAT ALLOWS USER TO FILTER THE INFORMATION
     // control that shows state info on hover
@@ -333,7 +361,10 @@
       var dataset = selecteDataSet(e.target.feature.properties.county);
       displayDataSet(dataset);
       //legend.update(map);
+      stateDistribution.addTo(map);
       stateDistribution.click(dataset);
+      map.removeControl(desc);
+      info.addTo(map);
       legend.addTo(map);
     }
 
