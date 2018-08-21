@@ -256,6 +256,9 @@
     function closeDesc() {
         map.removeControl(desc);
     }
+    function showDesc() {
+      desc.addTo(map);
+    }
     // =============================================
     // SHOWS INSTATE / OUT OF STATE DISTRIBUTION
     // =============================================
@@ -288,6 +291,7 @@
       this._div.innerHTML =
   `
   <button onclick="resetCounty()">Choose new county</button>
+
   <br>
   <select id="race" onchange="updateDataset()">
   <option value='all'>All</option>
@@ -307,6 +311,8 @@
   <option value='vl'>Very Low (30%-50% AMI)</option>
   <option value='el'>Extremley Low [0%-30% AMI]</option>
   </select>
+  <br>
+  <button onclick='showDesc()'>Info</button>
   `
   //<option value='li'>Low [50%-80% AMI]</option>
     };
