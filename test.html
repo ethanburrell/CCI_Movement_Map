@@ -137,7 +137,7 @@
         "wht": "White",
         "hsp": "Latinx",
         "blk": "Black",
-        "asn": "Asian",
+        "api": "Asian-Pacific Islander",
         "poc": "People Of Color",
         "all": "All"
     }
@@ -158,7 +158,7 @@
       window.map.removeLayer(geojson);
       map.removeControl(stateDistribution);
       map.removeControl(legend);
-      map.removeControl(info);
+      //map.removeControl(info);
 
       //legend.removeLayer(map);
       selectedLayer = null;
@@ -168,7 +168,7 @@
         onEachFeature: onEachFeature
       }).addTo(map);
       info.addTo(map);
-      info.addTo(desc);
+      //info.addTo(desc);
     }
 
     var colorCutoffs = [];
@@ -235,7 +235,8 @@
     // =============================================
     // SHOWS DESCRIPTION OF DATASET BEFORE CLICKING ON A COUNTY
     // =============================================
-    var desc = L.control({ position: "bottomright" });
+    //var desc = L.control({ position: "bottomright" });
+    var desc = L.control();
     desc.onAdd = function(map) {
       this._div = L.DomUtil.create("div", "info");
       this.update();
@@ -248,9 +249,13 @@
         `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
         quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-         Duis aute irure dolor in reprehenderit in voluptate velit esse `;
+         Duis aute irure dolor in reprehenderit in voluptate velit esse ` + "<br>" +
+         "<button onclick='closeDesc()'>Close</button>";
     };
     desc.addTo(map);
+    function closeDesc() {
+        map.removeControl(desc);
+    }
     // =============================================
     // SHOWS INSTATE / OUT OF STATE DISTRIBUTION
     // =============================================
@@ -286,7 +291,7 @@
   <br>
   <select id="race" onchange="updateDataset()">
   <option value='all'>All</option>
-  <option value='asn'>Asian</option>
+  <option value='api'>Asian-Pacific Islander</option>
   <option value='blk'>Black</option>
   <option value='hsp'>Latinx</option>
   <option value='poc'>People of Color</option>
@@ -297,9 +302,9 @@
   <option value='all'>All</option>
   <option value='h'>High [>120% AMI]</option>
   <option value='m'>Middle [80%-120% AMI]</option>
-  <option value='lw'>Low [<80% AMI]</option>
+  <option value='lw'>Low (<80% AMI)</option>
 
-  <option value='vl'>Very Low [30%-50% AMI]</option>
+  <option value='vl'>Very Low (30%-50% AMI)</option>
   <option value='el'>Extremley Low [0%-30% AMI]</option>
   </select>
   `
@@ -311,19 +316,22 @@
     // get color depending on population density value
     function getColor(d) {
       var grades = [0, 200, 400, 600, 800, 1000, 1200, 1600];
+      //5a001b
       return d > grades[7]
-        ? "#800026"
+        ? "#5a001b"
         : d > grades[6]
-        ? "#BD0026"
+        ? "#800026"
         : d > grades[5]
-        ? "#E31A1C"
+        ? "#BD0026"
         : d > grades[4]
-        ? "#FC4E2A"
+        ? "#E31A1C"
         : d > grades[3]
+        ? "#FC4E2A"
+        : d > grades[2]
         ? "#FD8D3C"
-        : d > grades[2] ? "#FEB24C"
+        : d > grades[1] ? "#FEB24C"
         //: d > colorCutoffs[1] ? "#FED976"
-        : d > 1 ? "#FED976"
+        : d > grades[0] + 1 ? "#FED976"
         : "#ffedc8"; // #FFEDA0
     }
     function style(feature) {
