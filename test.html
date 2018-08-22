@@ -20,6 +20,16 @@
       border-radius: 5px;
     }
 
+    .desc {
+          padding: 8px 8xfpx;
+          font: 14px/16px Arial, Helvetica, sans-serif;
+          background: white;
+          background: rgba(255, 255, 255, 0.8);
+          box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+          border-radius: 5px;
+          width: 100%;
+        }
+
     .distribution {
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
@@ -123,12 +133,12 @@
     function createInfoSentence(income, race, county) {
     county = toTitleCase(county);
     var income_abbr = {
-        "el": "Extremely Low [<30% AMI]",
-        "vl": "Very Low [<50% AMI]",
-        "li": "Low [50%-80% AMI]",
-        "lw": "Low [<80% AMI]",
-        "m": "Middle [80%-120% AMI]",
-        "h": "High [>120% AMI]",
+        "el": "Extremely Low", //[<30% AMI]
+        "vl": "Very Low", //[<50% AMI]
+        "li": "Low", //[50%-80% AMI]
+        "lw": "Low", // [<80% AMI]
+        "m": "Middle", //[80%-120% AMI]
+        "h": "High", //[>120% AMI]
         "all": "All"
     }
     i = income;
@@ -193,17 +203,25 @@
 
     var map = L.map("map").setView([37.8735, -122.4566], 8);
     //37.8735° N, 122.4566  37.7749, -122.4194
+    /*
     L.tileLayer(
       "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw",
       {
         maxZoom: 18,
         attribution:
-          'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-          '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-          'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+          'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a>' +
+          'Imagery © <a href="http://mapbox.com">Carto</a>',
         id: "mapbox.light"
       }
-    ).addTo(map);
+    ).addTo(map);*/
+    L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+        attribution: '©OpenStreetMap, ©CartoDB'
+      }).addTo(map);
+      /*
+    var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+        attribution: '©OpenStreetMap, ©CartoDB',
+        pane: 'labels'
+      }).addTo(map);*/
     // control that shows state info on hover
     var info = L.control();
     info.onAdd = function(map) {
@@ -215,11 +233,11 @@
       if (selectedLayer && infoSentece) {
       this._div.innerHTML =
         //"<h4># of people that were moved from SF</h4>" +
-        infoSentece + "<br>" +
+        "<b>" + infoSentece + "</b>" + "<br>" +
         (props
-          ? "<b>" +
+          ? /*"<b>"*/
             props.NAME10 +
-            "</b><br />" +
+            /*"</b>*/"<br />" +
             props[dataset_forcolor] +
             " people"
           : "Hover over a state");
@@ -228,7 +246,7 @@
           (props
             ? "<b>" +
               props.county +
-              " county"
+              " County"
             : "Hover over a county");
       }
     };
@@ -239,7 +257,7 @@
     //var desc = L.control({ position: "bottomright" });
     var desc = L.control();
     desc.onAdd = function(map) {
-      this._div = L.DomUtil.create("div", "info");
+      this._div = L.DomUtil.create("div", "desc");
       this.update();
       return this._div;
     };
@@ -263,7 +281,7 @@
     // =============================================
     // SHOWS INSTATE / OUT OF STATE DISTRIBUTION
     // =============================================
-    var stateDistribution = L.control({ position: "topleft" });
+    var stateDistribution = L.control({ position: "bottomleft" });
     stateDistribution.onAdd = function(map) {
       this._div = L.DomUtil.create("div", "distribution");
       this.click();
@@ -272,7 +290,7 @@
     stateDistribution.click = function(props) {
       //if (selectedLayer != null) {
       this._div.innerHTML =
-        "# of people who from " + toTitleCase(county_current) + " County who moved:<br>" +
+        "<b>" + "# of people from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
         "Out of Region: NA" + "<br>" +
         "Out of State: NA";
 
@@ -458,7 +476,7 @@
         }
 
       }
-      div.innerHTML = labels.join("<br>");
+      div.innerHTML = "<p style='font-size:10px;'> # of people who moved: </p> <br>" + labels.join("<br>");
       return div;
 
     };
