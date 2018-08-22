@@ -123,8 +123,8 @@
     function createInfoSentence(income, race, county) {
     county = toTitleCase(county);
     var income_abbr = {
-        "el": "Extremely Low [0%-30% AMI]",
-        "vl": "Very Low [30%-50% AMI]",
+        "el": "Extremely Low [<30% AMI]",
+        "vl": "Very Low [<50% AMI]",
         "li": "Low [50%-80% AMI]",
         "lw": "Low [<80% AMI]",
         "m": "Middle [80%-120% AMI]",
@@ -144,13 +144,13 @@
     r = race;
     race = race_abbr[race]
       if (i == "all" && r == "all") {
-          return "All people who moved from " + county + " County";
+          return "All people who moved from " + county + " County to:";
       } else if (i == "all") {
-          return "All "+ race +" who moved from " + county + " County";
+          return "All "+ race +" who moved from " + county + " County to:";
       } else if (r == "all") {
-          return "All "+ income +" Income who moved from " + county + " County";
+          return "All "+ income +" Income who moved from " + county + " County to:";
       } else {
-          return income +" Income "+ race +" who moved from " + county + " County";
+          return income +" Income "+ race +" who moved from " + county + " County to:";
       }
     }
 
@@ -272,10 +272,9 @@
     stateDistribution.click = function(props) {
       //if (selectedLayer != null) {
       this._div.innerHTML =
-        "Distribution of instate to out of state for " + county_current + "<br>" +
-        "13 counties: NA" + "<br>" +
-        "CA: NA" +  "<br>" +
-        "Not - CA: NA";
+        "# of people who from " + toTitleCase(county_current) + " County who moved:<br>" +
+        "Out of Region: NA" + "<br>" +
+        "Out of State: NA";
 
     };
 
@@ -307,10 +306,10 @@
   <option value='all'>All</option>
   <option value='h'>High [>120% AMI]</option>
   <option value='m'>Middle [80%-120% AMI]</option>
-  <option value='lw'>Low (<80% AMI)</option>
+  <option value='lw'>Low [<80% AMI]</option>
 
-  <option value='vl'>Very Low (30%-50% AMI)</option>
-  <option value='el'>Extremley Low [0%-30% AMI]</option>
+  <option value='vl'>Very Low [<50% AMI]</option>
+  <option value='el'>Extremley Low [<30% AMI]</option>
   </select>
   <br>
   <button onclick='showDesc()'>Info</button>
