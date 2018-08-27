@@ -97,13 +97,14 @@
     }
     var county_current = "";
     function selecteDataSet(county_name) {
+      //if (selectedLayer == null) {
       county_name = county_name.toLowerCase();
       county_current = county_name;
       //if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
         infoSentece = createInfoSentence(document.getElementById("income").value, document.getElementById("race").value, county_name);
         return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
       //}
-
+    //}
     }
     var dataset_forcolor = "";
     function displayDataSet(dataset) {
@@ -120,6 +121,7 @@
     function updateDataset() {
       var dataset = selecteDataSet(selectedLayer.feature.properties.county);
       displayDataSet(dataset);
+      stateDistribution.click(dataset_forcolor);
       //legend.update(map);
       legend.addTo(map);
     }
@@ -180,6 +182,7 @@
     }
 
     function resetCounty() {
+      //county_current = ""
       window.map.removeLayer(geojson);
       map.removeControl(stateDistribution);
       map.removeControl(legend);
@@ -307,6 +310,7 @@
     var stateDistribution = L.control({ position: "bottomleft" });
     stateDistribution.onAdd = function(map) {
       this._div = L.DomUtil.create("div", "distribution");
+      this._div.style.width = document.getElementsByClassName("filter")[0].offsetWidth;
       this.click();
       return this._div;
     };
@@ -314,8 +318,8 @@
       //if (selectedLayer != null) {
       this._div.innerHTML =
         "<b>" + "# of people from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
-        "Out of Region: NA" + "<br>" +
-        "Out of State: NA";
+        "Out of Region: " + pumaData["features"][74]["properties"][props] + "<br>" +
+        "Out of State: " + pumaData["features"][75]["properties"][props];
 
     };
 
@@ -421,9 +425,10 @@
 
     var selectedLayer = null;
     function selectState(e) {
+      if (selectedLayer == null) {
       selectedLayer = e.target;
       console.log(e.target.feature.properties.county);
-      var dataset = selecteDataSet(e.target.feature.properties.county);
+      dataset = selecteDataSet(e.target.feature.properties.county);
       displayDataSet(dataset);
       createCountyOutline();
       //legend.update(map);
@@ -432,6 +437,7 @@
       map.removeControl(desc);
       info.addTo(map);
       legend.addTo(map);
+    }
     }
 
 
