@@ -27,7 +27,7 @@
           background: rgba(255, 255, 255, 0.8);
           box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
           border-radius: 5px;
-          width: 100%;
+          width: 98%;
         }
 
     .distribution {
@@ -129,6 +129,21 @@
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
     }
+    var county_outline = null;
+    function createCountyOutline() {
+      county_cap = toTitleCase(county_current)
+      for (i in county_data["features"]) {
+        if (county_cap == county_data["features"][i]["properties"]["county"]) {
+          //county_outline = county_data["features"][i]["geometry"]["coordinates"];
+          county_outline = new L.Polygon(county_data["features"][i]["geometry"]["coordinates"]).addTo(map);
+          county_outline.setStyle(style2);
+        }
+      }
+
+
+
+      //county_outline.addTo(map);
+    }
 
     function createInfoSentence(income, race, county) {
     county = toTitleCase(county);
@@ -139,7 +154,7 @@
         "lw": "Low", // [<80% AMI]
         "m": "Middle", //[80%-120% AMI]
         "h": "High", //[>120% AMI]
-        "all": "All"
+        "z": "All"
     }
     i = income;
     income = income_abbr[income];
@@ -149,15 +164,15 @@
         "blk": "Black",
         "api": "Asian-Pacific Islander",
         "poc": "People Of Color",
-        "all": "All"
+        "z": "All"
     }
     r = race;
     race = race_abbr[race]
-      if (i == "all" && r == "all") {
+      if (i == "z" && r == "z") {
           return "All people who moved from " + county + " County to:";
-      } else if (i == "all") {
+      } else if (i == "z") {
           return "All "+ race +" who moved from " + county + " County to:";
-      } else if (r == "all") {
+      } else if (r == "z") {
           return "All "+ income +" Income who moved from " + county + " County to:";
       } else {
           return income +" Income "+ race +" who moved from " + county + " County to:";
@@ -214,14 +229,19 @@
         id: "mapbox.light"
       }
     ).addTo(map);*/
-    L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
-        attribution: '©OpenStreetMap, ©CartoDB'
-      }).addTo(map);
-      /*
+    map.createPane('labels');
+    map.getPane('labels').style.zIndex = 650;
+    map.getPane('labels').style.pointerEvents = 'none';
+
+    var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+            //attribution: '©OpenStreetMap, ©CartoDB'
+    }).addTo(map);
+
     var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
-        attribution: '©OpenStreetMap, ©CartoDB',
-        pane: 'labels'
-      }).addTo(map);*/
+            attribution: '©OpenStreetMap, ©CartoDB, Dataset <a href="https://usa.ipums.org/usa/"> IPUMS </a>',
+            pane: 'labels'
+    }).addTo(map);
+
     // control that shows state info on hover
     var info = L.control();
     info.onAdd = function(map) {
@@ -265,10 +285,13 @@
       this._div.innerHTML =
         //"<h4># of people that were moved from SF</h4>" +
         "Descrition of the Dataset" + "<br>" +
-        `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-         Duis aute irure dolor in reprehenderit in voluptate velit esse ` + "<br>" +
+        `This migration data shows people who moved in 2015. Start by clicking
+        on the county of origin, then select the race and income group of interest.
+        The map will show where movers from this county went (within Northern California),
+        as well as provide data on people who left the region and state. This
+        data comes from the ACS 1-year Public Use Microdata Sample (PUMS) for 2015` + "<br>" +
+        "Created by Community Center for Innovation at UC Berkeley."
+        + "<br>" +
          "<button onclick='closeDesc()'>Close</button>";
     };
     desc.addTo(map);
@@ -312,16 +335,16 @@
 
   <br>
   <select id="race" onchange="updateDataset()">
-  <option value='all'>All</option>
+  <option value='z'>All</option>
   <option value='api'>Asian-Pacific Islander</option>
   <option value='blk'>Black</option>
   <option value='hsp'>Latinx</option>
-  <option value='poc'>People of Color</option>
+  <option value='poc'>All People of Color</option>
   <option value='wht'>White</option>
   </select>
   <br>
   <select id="income" onchange="updateDataset()">
-  <option value='all'>All</option>
+  <option value='z'>All</option>
   <option value='h'>High [>120% AMI]</option>
   <option value='m'>Middle [80%-120% AMI]</option>
   <option value='lw'>Low [<80% AMI]</option>
@@ -368,6 +391,16 @@
         fillColor: getColor(feature.properties[dataset_forcolor])//feature.properties.sf_li_all
       };
     }
+    function style2() {
+      return {
+        weight: 2,
+        opacity: 1,
+        color: "black",
+        dashArray: "1",
+        fillOpacity: 0,
+        fillColor: black//feature.properties.sf_li_all
+      };
+    }
     //THE CODE THAT I AM WRITING TO HAVE YOU BE
     // ABLE TO SELECT A STATE AND THEN SEE THE DISPALCEMENT
     // AMOUNTS OF OTHER PUMAS
@@ -392,6 +425,7 @@
       console.log(e.target.feature.properties.county);
       var dataset = selecteDataSet(e.target.feature.properties.county);
       displayDataSet(dataset);
+      createCountyOutline();
       //legend.update(map);
       stateDistribution.addTo(map);
       stateDistribution.click(dataset);
@@ -436,9 +470,9 @@
       onEachFeature: onEachFeature
     }).addTo(map);
 
-    map.attributionControl.addAttribution(
+/*    map.attributionControl.addAttribution(
       'Population data &copy; <a href="http://census.gov/">US Census Bureau</a>'
-    );
+    );*/
     var legend = L.control({ position: "bottomright" });
     legend.onAdd = function(map) {
       var div = L.DomUtil.create("div", "info legend"),
@@ -476,7 +510,7 @@
         }
 
       }
-      div.innerHTML = "<p style='font-size:10px;'> # of people who moved: </p> <br>" + labels.join("<br>");
+      div.innerHTML = "<p style='font-size:10px; padding: 0; margin: 0;'> # of people who moved: </p> " + labels.join("<br>");
       return div;
 
     };
