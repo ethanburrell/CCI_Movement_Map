@@ -106,6 +106,16 @@
       //}
     //}
     }
+
+    function numberWithCommas(x) {
+        /*if (x != null) {
+      var parts = x.split(".");
+parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+return parts.join(".");
+}*/
+return x
+    }
+
     var dataset_forcolor = "";
     function displayDataSet(dataset) {
       console.log(dataset);
@@ -232,6 +242,7 @@
         id: "mapbox.light"
       }
     ).addTo(map);*/
+    //STYLE OF MAP
     map.createPane('labels');
     map.getPane('labels').style.zIndex = 650;
     map.getPane('labels').style.pointerEvents = 'none';
@@ -319,7 +330,7 @@
       this._div.innerHTML =
         "<b>" + "# of people from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
         "Out of Region: " + pumaData["features"][74]["properties"][props] + "<br>" +
-        "Out of State: " + pumaData["features"][75]["properties"][props];
+        "Out of State: " + numberWithCommas(pumaData["features"][75]["properties"][props]);
 
     };
 
@@ -336,7 +347,6 @@
       this._div.innerHTML =
   `
   <button onclick="resetCounty()">Choose new county</button>
-
   <br>
   <select id="race" onchange="updateDataset()">
   <option value='z'>All</option>
