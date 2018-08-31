@@ -42,10 +42,10 @@
 <script src="rent-data.js"> </script>
 
 <script type="text/javascript">
-
+	var grades = [-30, -15, -5, 5, 15, 30];
 
 	var map = L.map("map").setView([37.8735, -122.4566], 8);
-	var dataset = null;
+	var dataset = "rent";
 	var property_to_display = "mdpctchng";
 	geojson = L.geoJson(rentData, {
 		style: style,
@@ -79,17 +79,57 @@
 	info.update = function (props) {
 		//console.log(props)
 		if (props != null) {
-		this._div.innerHTML = props[property_to_display] + ' median percent change in rent';
+		//this._div.innerHTML = props[property_to_display] + ' median percent change in rent';
+		if (dataset == "rent") {
+		this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' median percent change in rent';
+		}
 	}
 	};
 
 	info.addTo(map);
 
+	// =====================
+	// Add selection
+	// =====================
+
+
+	var filter = L.control({position: 'bottomleft'});
+	filter.onAdd = function(map) {
+	  this._div = L.DomUtil.create("div", "filter");
+	  this.onNewCounty();
+	  return this._div;
+	};
+	filter.onNewCounty = function(props) {
+	  this._div.innerHTML =
+	`
+	<select id="dataSetOption" onchange="updateDataset()">
+	<option value='rent'>Rent</option>
+	<option value='demographics'>Demographic Change</option>
+	</select>
+	<br>
+	<button onclick='showDesc()'>Info</button>
+	`
+	//<option value='li'>Low [50%-80% AMI]</option>
+	};
+	filter.addTo(map);
 
 	// get color depending on population density value
+	var grades = [-30, -15, -5, 5, 15, 30];
 	function getColor(d) {
-		var grades = [-20, -15, -10, -5, 0, 5, 10, 15, 20];
-		return d > grades[8] ? '#d6142a' :
+
+		if (document.getElementById("dataSetOption") == null || document.getElementById("dataSetOption").value == "rent") {
+			grades = [-30, -15, -5, 5, 15, 30];
+			return d == 0 ? "#EDEBEB" :
+					d > grades[5]  ? '#D7191D' :
+					d > grades[4]  ? '#FDAE61' :
+					d > grades[3]   ? '#FECC5C' :
+					d > grades[2]   ? '#F7F2D1' :
+					d > grades[1]   ? '#ABD9E9' :
+					d > grades[0]   ? '#2C7BB6' :
+								'#2C548B';
+		} else if (document.getElementById("dataSetOption").value == "demographics") {
+		return d == 0 ? "#EDEBEB" :
+				d > grades[8] ? '#d6142a' :
 				d > grades[7]  ? '#d43f50' :
 				d > grades[6]  ? '#f68c5c' :
 				d > grades[5]  ? '#fddf8b' :
@@ -98,6 +138,7 @@
 				d > grades[2]   ? '#3489bd' :
 				d > grades[1]   ? '#1d7bb5' :
 							'#114f75';
+			}
 	}
 
 	function style(feature) {
@@ -152,50 +193,43 @@
 	legend.onAdd = function (map) {
 
 		var div = L.DomUtil.create('div', 'info legend'),
-			grades = [-20, -15, -10, -5, 0, 5, 10, 15, 20],
+			grades = grades,
 			labels = [],
 			from, to;
-
+		if (dataset == "rent") {
+			grades = [-30, -15, -5, 5, 15, 30];
+			labels.push('<i style="background:' + getColor(-30 - 1) + '"></i> ' + "< -30");
+			labels.push('<i style="background:' + getColor(-15 - 1) + '"></i> ' + "-30 &ndash; -15");
+			labels.push('<i style="background:' + getColor(-5 - 1) + '"></i> ' + "-15 &ndash; -5");
+			labels.push('<i style="background:' + getColor(-5 + 1) + '"></i> ' + "-5 &ndash; 5");
+			labels.push('<i style="background:' + getColor(5 + 1) + '"></i> ' + "5 &ndash; 15");
+			labels.push('<i style="background:' + getColor(15 + 1) + '"></i> ' + "15 &ndash; 30");
+			labels.push('<i style="background:' + getColor(30 + 1) + '"></i> ' + "30+");
+		} else {
+			grades = [-30, -15, -5, -5, 5, 15, 30];
+		}
+		/*
 		for (var i = 0; i < grades.length; i++) {
 			from = grades[i];
 			to = grades[i + 1];
 
+			if (i != 0) {
 			labels.push(
 				'<i style="background:' + getColor(from + 1) + '"></i> ' +
-				from + (to ? '&ndash;' + to : '+'));
-		}
+				from + (to ? ' &ndash; ' + to : '+'));
+			} else {
+				labels.push(
+					'<i style="background:' + getColor(from - 1) + '"></i> ' +
+					from + "-");
+			}
 
+		}*/
+		labels = labels.reverse();
 		div.innerHTML = labels.join('<br>');
 		return div;
 	};
 
 	legend.addTo(map);
-
-
-// =====================
-// Add selection
-// =====================
-
-
-var filter = L.control({position: 'bottomleft'});
-filter.onAdd = function(map) {
-  this._div = L.DomUtil.create("div", "filter");
-  this.onNewCounty();
-  return this._div;
-};
-filter.onNewCounty = function(props) {
-  this._div.innerHTML =
-`
-<select id="dataSetOption" onchange="updateDataset()">
-<option value='rent'>Rent</option>
-<option value='diversity'>Diversity</option>
-</select>
-<br>
-<button onclick='showDesc()'>Info</button>
-`
-//<option value='li'>Low [50%-80% AMI]</option>
-};
-filter.addTo(map);
 
 
 
@@ -210,7 +244,7 @@ function updateDataset() {
 			onEachFeature: onEachFeature
 		}).addTo(map);
 
-  } else if (document.getElementById("dataSetOption").value == "diversity") {
+  } else if (document.getElementById("dataSetOption").value == "demographics") {
     editDiversity.addTo(map);
     dataset = "diversity SD";
 		map.removeLayer(geojson);
