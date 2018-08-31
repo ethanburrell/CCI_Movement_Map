@@ -105,7 +105,7 @@
 	  this._div.innerHTML =
 	`
 	<select id="dataSetOption" onchange="updateDataset()">
-	<option value='rent'>Rent Change</option>
+	<option value='rent'>Change in Median Rent</option>
 	<option value='demographics'>Demographic Change</option>
 	</select>
 	<br>
@@ -120,8 +120,9 @@
 	function getColor(d) {
 
 		if (document.getElementById("dataSetOption") == null || document.getElementById("dataSetOption").value == "rent") {
-			grades = [-30, -15, -5, 5, 15, 30];
+			grades = [-30, -15, -5, 5, 15, 30, 50];
 			return d == 0 ? "#EDEBEB" :
+					d > grades[6]  ? '#7d021d' :
 					d > grades[5]  ? '#D7191D' :
 					d > grades[4]  ? '#FDAE61' :
 					d > grades[3]   ? '#FECC5C' :
@@ -151,10 +152,10 @@
 
 	function style(feature) {
 		return {
-			weight: 2,
+			weight: 1,
 			opacity: 1,
 			color: 'white',
-			dashArray: '3',
+			dashArray: '0',
 			fillOpacity: 0.7,
 			fillColor: getColor(feature["properties"][property_to_display])
 		};
@@ -199,22 +200,28 @@
 	var legend = L.control({position: 'bottomright'});
 
 	legend.onAdd = function (map) {
-
+		var legend_str = "";
 		var div = L.DomUtil.create('div', 'info legend'),
 			grades = grades,
 			labels = [],
 			from, to;
 		if (dataset == "rent") {
 			grades = [-30, -15, -5, 5, 15, 30];
-			labels.push('<i style="background:' + getColor(-30 - 1) + '"></i> ' + "< -30");
-			labels.push('<i style="background:' + getColor(-15 - 1) + '"></i> ' + "-30 &ndash; -15");
-			labels.push('<i style="background:' + getColor(-5 - 1) + '"></i> ' + "-15 &ndash; -5");
-			labels.push('<i style="background:' + getColor(-5 + 1) + '"></i> ' + "-5 &ndash; 5");
-			labels.push('<i style="background:' + getColor(5 + 1) + '"></i> ' + "5 &ndash; 15");
-			labels.push('<i style="background:' + getColor(15 + 1) + '"></i> ' + "15 &ndash; 30");
-			labels.push('<i style="background:' + getColor(30 + 1) + '"></i> ' + "> 30");
+			legend_str = "Change in Median Rent (% change)";
+			labels.push('<i style="background:' + getColor(0) + '"></i> ' + "Unreliable Data");
+			labels.push('<i style="background:' + getColor(-30 - 1) + '"></i> ' + "Decrease >30% ");
+			labels.push('<i style="background:' + getColor(-15 - 1) + '"></i> ' + "Decrease 15 - 30% ");
+			labels.push('<i style="background:' + getColor(-5 - 1) + '"></i> ' + "Decrease 5 - 15% ");
+			labels.push('<i style="background:' + getColor(-5 + 1) + '"></i> ' + "Minimal Change (+/- 5%)");
+			labels.push('<i style="background:' + getColor(5 + 1) + '"></i> ' + "Increase 5 - 15% ");
+			labels.push('<i style="background:' + getColor(15 + 1) + '"></i> ' + "Increase 15 &ndash; 30%");
+			labels.push('<i style="background:' + getColor(30 + 1) + '"></i> ' + "Increase >30%");
+			labels.push('<i style="background:' + getColor(50 + 1) + '"></i> ' + "Increase >50%");
+
 		} else {
 			grades = [-30, -15, -5, -5, 5, 15, 30];
+			legend_str = "Change in Number of Households";
+			labels.push('<i style="background:' + getColor(0) + '"></i> ' + "Unreliable Data");
 			labels.push('<i style="background:' + getColor(-100 - 1) + '"></i> ' + "< -100");
 			labels.push('<i style="background:' + getColor(-50 - 1) + '"></i> ' + "-100 &ndash; -50");
 			labels.push('<i style="background:' + getColor(0- 1) + '"></i> ' + "-50 &ndash; 0");
@@ -231,7 +238,8 @@
 		762A83	Decrease > 100
 		*/
 		labels = labels.reverse();
-		div.innerHTML = labels.join('<br>');
+		//div.innerHTML = labels.join('<br>');
+		div.innerHTML = "<p style='font-size:12px; padding: 0; margin: 0;'> "+ legend_str +" </p> " + labels.join('<br>');;
 		return div;
 	};
 
