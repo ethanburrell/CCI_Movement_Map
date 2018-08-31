@@ -274,7 +274,7 @@ return x
             /*"</b>*/"<br />" +
             props[dataset_forcolor] +
             " people"
-          : "Hover over a PUMA");
+          : "Hover over a destination");
       } else {
         this._div.innerHTML =
           (props
@@ -298,7 +298,7 @@ return x
     desc.update = function() {
       this._div.innerHTML =
         //"<h4># of people that were moved from SF</h4>" +
-        "Descrition of the Dataset" + "<br>" +
+        "<b>Description of the Dataset</b>" + "<br> <br>" +
         `This migration data shows people who moved in 2015. Start by clicking
         on the county of origin, then select the race and income group of interest.
         The map will show where movers from this county went (within Northern California),
@@ -526,7 +526,7 @@ return x
         }
 
       }
-      div.innerHTML = "<p style='font-size:10px; padding: 0; margin: 0;'> # of people who moved: </p> " + labels.join("<br>");
+      div.innerHTML = "<p style='font-size:13x; padding: 0; margin: 0;'> # of people who moved: </p> " + labels.join("<br>");
       return div;
 
     };

@@ -81,7 +81,9 @@
 		if (props != null) {
 		//this._div.innerHTML = props[property_to_display] + ' median percent change in rent';
 		if (dataset == "rent") {
-		this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' median percent change in rent';
+			this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' median percent change in rent';
+		} else {
+			this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' Change in # of Households';
 		}
 	}
 	};
@@ -103,7 +105,7 @@
 	  this._div.innerHTML =
 	`
 	<select id="dataSetOption" onchange="updateDataset()">
-	<option value='rent'>Rent</option>
+	<option value='rent'>Rent Change</option>
 	<option value='demographics'>Demographic Change</option>
 	</select>
 	<br>
@@ -114,7 +116,7 @@
 	filter.addTo(map);
 
 	// get color depending on population density value
-	var grades = [-30, -15, -5, 5, 15, 30];
+	//
 	function getColor(d) {
 
 		if (document.getElementById("dataSetOption") == null || document.getElementById("dataSetOption").value == "rent") {
@@ -128,18 +130,24 @@
 					d > grades[0]   ? '#2C7BB6' :
 								'#2C548B';
 		} else if (document.getElementById("dataSetOption").value == "demographics") {
+			var grades = [-100, -50, 0, 50, 100];
 		return d == 0 ? "#EDEBEB" :
-				d > grades[8] ? '#d6142a' :
-				d > grades[7]  ? '#d43f50' :
-				d > grades[6]  ? '#f68c5c' :
-				d > grades[5]  ? '#fddf8b' :
-				d > grades[4]   ? '#e5eb9a' :
-				d > grades[3]   ? '#99d093' :
-				d > grades[2]   ? '#3489bd' :
-				d > grades[1]   ? '#1d7bb5' :
-							'#114f75';
+				d > grades[5]  ? '#3E9000' :
+				d > grades[4]   ? '#8DB22A' :
+				d > grades[3]   ? '#D2E596' :
+				d > grades[2]   ? '#E7D4E8' :
+				d > grades[1]   ? '#AF8DC3' :
+							'#762A83';
 			}
 	}
+	/*
+	3E9000	Increase > 100
+	8DB22A	Increase 50 - 100
+	D2E596	Increase < 50
+	E7D4E8	Decrease < 50
+	AF8DC3	Decrease 50 - 100
+	762A83	Decrease > 100
+	*/
 
 	function style(feature) {
 		return {
@@ -204,26 +212,24 @@
 			labels.push('<i style="background:' + getColor(-5 + 1) + '"></i> ' + "-5 &ndash; 5");
 			labels.push('<i style="background:' + getColor(5 + 1) + '"></i> ' + "5 &ndash; 15");
 			labels.push('<i style="background:' + getColor(15 + 1) + '"></i> ' + "15 &ndash; 30");
-			labels.push('<i style="background:' + getColor(30 + 1) + '"></i> ' + "30+");
+			labels.push('<i style="background:' + getColor(30 + 1) + '"></i> ' + "> 30");
 		} else {
 			grades = [-30, -15, -5, -5, 5, 15, 30];
+			labels.push('<i style="background:' + getColor(-100 - 1) + '"></i> ' + "< -100");
+			labels.push('<i style="background:' + getColor(-50 - 1) + '"></i> ' + "-100 &ndash; -50");
+			labels.push('<i style="background:' + getColor(0- 1) + '"></i> ' + "-50 &ndash; 0");
+			labels.push('<i style="background:' + getColor(0+ 1) + '"></i> ' + "0 &ndash; 50");
+			labels.push('<i style="background:' + getColor(50 + 1) + '"></i> ' + "50 &ndash; 100");
+			labels.push('<i style="background:' + getColor(100 + 1) + '"></i> ' + "> 100");
 		}
 		/*
-		for (var i = 0; i < grades.length; i++) {
-			from = grades[i];
-			to = grades[i + 1];
-
-			if (i != 0) {
-			labels.push(
-				'<i style="background:' + getColor(from + 1) + '"></i> ' +
-				from + (to ? ' &ndash; ' + to : '+'));
-			} else {
-				labels.push(
-					'<i style="background:' + getColor(from - 1) + '"></i> ' +
-					from + "-");
-			}
-
-		}*/
+		3E9000	Increase > 100
+		8DB22A	Increase 50 - 100
+		D2E596	Increase < 50
+		E7D4E8	Decrease < 50
+		AF8DC3	Decrease 50 - 100
+		762A83	Decrease > 100
+		*/
 		labels = labels.reverse();
 		div.innerHTML = labels.join('<br>');
 		return div;
@@ -238,16 +244,29 @@ function updateDataset() {
     dataset = rentData;
     map.removeControl(editDiversity);
 		map.removeLayer(geojson);
+		map.removeControl(legend);
+		map.removeControl(info);
 		property_to_display = "mdpctchng";
 		geojson = L.geoJson(rentData, {
 			style: style,
 			onEachFeature: onEachFeature
 		}).addTo(map);
+		legend.addTo(map);
+		legend.addTo(info);
 
   } else if (document.getElementById("dataSetOption").value == "demographics") {
     editDiversity.addTo(map);
     dataset = "diversity SD";
 		map.removeLayer(geojson);
+		map.removeControl(legend);
+		map.removeControl(info);
+		property_to_display = "all_all";
+		geojson = L.geoJson(rentData, {
+			style: style,
+			onEachFeature: onEachFeature
+		}).addTo(map);
+		legend.addTo(map);
+		legend.addTo(info);
   }
 }
 
