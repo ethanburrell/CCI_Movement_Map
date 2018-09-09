@@ -40,6 +40,7 @@
 
 <div id="map" class="leaflet-container leaflet-touch leaflet-retina leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"> </div>
 <script src="rent-data.js"> </script>
+<script src="demo-data.js"> </script>
 
 <script type="text/javascript">
 	var grades = [-30, -15, -5, 5, 15, 30];
@@ -81,9 +82,17 @@
 		if (props != null) {
 		//this._div.innerHTML = props[property_to_display] + ' median percent change in rent';
 		if (dataset == "rent") {
-			this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' median percent change in rent';
+			if (props[property_to_display] == 0) {
+				this._div.innerHTML = "Unreliable Data";
 		} else {
+				this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' median percent change in rent';
+		}
+		} else {
+			if (props[property_to_display] == -8888) {
+				this._div.innerHTML = "Unreliable Data";
+			} else {
 			this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' Change in # of Households';
+		}
 		}
 	}
 	};
@@ -132,12 +141,12 @@
 								'#2C548B';
 		} else if (document.getElementById("dataSetOption").value == "demographics") {
 			var grades = [-100, -50, 0, 50, 100];
-		return d == 0 ? "#EDEBEB" :
-				d > grades[5]  ? '#3E9000' :
-				d > grades[4]   ? '#8DB22A' :
-				d > grades[3]   ? '#D2E596' :
-				d > grades[2]   ? '#E7D4E8' :
-				d > grades[1]   ? '#AF8DC3' :
+		return d == -8888 ? "#EDEBEB" :
+				d > grades[4]  ? '#3E9000' :
+				d > grades[3]   ? '#8DB22A' :
+				d > grades[2]   ? '#D2E596' :
+				d > grades[1]   ? '#E7D4E8' :
+				d > grades[0]   ? '#AF8DC3' :
 							'#762A83';
 			}
 	}
@@ -221,13 +230,13 @@
 		} else {
 			grades = [-30, -15, -5, -5, 5, 15, 30];
 			legend_str = "Change in Number of Households";
-			labels.push('<i style="background:' + getColor(0) + '"></i> ' + "Unreliable Data");
-			labels.push('<i style="background:' + getColor(-100 - 1) + '"></i> ' + "< -100");
-			labels.push('<i style="background:' + getColor(-50 - 1) + '"></i> ' + "-100 &ndash; -50");
-			labels.push('<i style="background:' + getColor(0- 1) + '"></i> ' + "-50 &ndash; 0");
-			labels.push('<i style="background:' + getColor(0+ 1) + '"></i> ' + "0 &ndash; 50");
-			labels.push('<i style="background:' + getColor(50 + 1) + '"></i> ' + "50 &ndash; 100");
-			labels.push('<i style="background:' + getColor(100 + 1) + '"></i> ' + "> 100");
+			labels.push('<i style="background:' + getColor(-8888) + '"></i> ' + "Unreliable Data");
+			labels.push('<i style="background:' + getColor(-100 - 1) + '"></i> ' + "Decrease > 100");
+			labels.push('<i style="background:' + getColor(-50 - 1) + '"></i> ' + "Decrease 50 - 100");
+			labels.push('<i style="background:' + getColor(0- 1) + '"></i> ' + "Decrease < 50");
+			labels.push('<i style="background:' + getColor(0+ 1) + '"></i> ' + "Increase < 50");
+			labels.push('<i style="background:' + getColor(50 + 1) + '"></i> ' + "Increase 50 - 100");
+			labels.push('<i style="background:' + getColor(100 + 1) + '"></i> ' + "Increase > 100");
 		}
 		/*
 		3E9000	Increase > 100
@@ -260,21 +269,23 @@ function updateDataset() {
 			onEachFeature: onEachFeature
 		}).addTo(map);
 		legend.addTo(map);
-		legend.addTo(info);
+		info.addTo(map);
 
   } else if (document.getElementById("dataSetOption").value == "demographics") {
-    editDiversity.addTo(map);
-    dataset = "diversity SD";
+		if(editDiversity._map == null) {
+    	editDiversity.addTo(map);
+		}
+    dataset = demoData;
 		map.removeLayer(geojson);
 		map.removeControl(legend);
 		map.removeControl(info);
-		property_to_display = "all_all";
-		geojson = L.geoJson(rentData, {
+		property_to_display = document.getElementById("income").value + "_" + document.getElementById("race").value;
+		geojson = L.geoJson(demoData, {
 			style: style,
 			onEachFeature: onEachFeature
 		}).addTo(map);
 		legend.addTo(map);
-		legend.addTo(info);
+		info.addTo(map);
   }
 }
 
@@ -294,8 +305,8 @@ editDiversity.onNewCounty = function(props) {
   `
   <br>
   <select id="race" onchange="updateDataset()">
-  <option value='z'>All</option>
-  <option value='api'>Asian-Pacific Islander</option>
+  <option value='all'>All</option>
+  <option value='asn'>Asian-Pacific Islander</option>
   <option value='blk'>Black</option>
   <option value='hsp'>Latinx</option>
   <option value='poc'>All People of Color</option>
@@ -303,13 +314,13 @@ editDiversity.onNewCounty = function(props) {
   </select>
   <br>
   <select id="income" onchange="updateDataset()">
-  <option value='z'>All</option>
-  <option value='h'>High [>120% AMI]</option>
-  <option value='m'>Middle [80%-120% AMI]</option>
-  <option value='lw'>Low [<80% AMI]</option>
+  <option value='all'>All</option>
+  <option value='hi'>High [>120% AMI]</option>
+  <option value='mi'>Middle [80%-120% AMI]</option>
+  <option value='lwi'>Low [<80% AMI]</option>
 
-  <option value='vl'>Very Low [<50% AMI]</option>
-  <option value='el'>Extremley Low [<30% AMI]</option>
+  <option value='vli'>Very Low [<50% AMI]</option>
+  <option value='eli'>Extremley Low [<30% AMI]</option>
   </select>
   <br>
   `
