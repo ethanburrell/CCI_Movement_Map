@@ -214,7 +214,7 @@
 			grades = grades,
 			labels = [],
 			from, to;
-		if (dataset == "rent") {
+		if (document.getElementById("dataSetOption").value == "rent") {
 			grades = [-30, -15, -5, 5, 15, 30];
 			legend_str = "Change in Median Rent (% change)";
 			labels.push('<i style="background:' + getColor(0) + '"></i> ' + "Unreliable Data");
