@@ -81,14 +81,14 @@
 		//console.log(props)
 		if (props != null) {
 		//this._div.innerHTML = props[property_to_display] + ' median percent change in rent';
-		if (dataset == "rent") {
+		if (document.getElementById("dataSetOption").value == "rent") {
 			if (props[property_to_display] == 0) {
 				this._div.innerHTML = "Unreliable Data";
 		} else {
 				this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' median percent change in rent';
 		}
 		} else {
-			if (props[property_to_display] == -8888) {
+			if (props[property_to_display] == -8888 || props[property_to_display] == 0) {
 				this._div.innerHTML = "Unreliable Data";
 			} else {
 			this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' Change in # of Households';
@@ -142,6 +142,7 @@
 		} else if (document.getElementById("dataSetOption").value == "demographics") {
 			var grades = [-100, -50, 0, 50, 100];
 		return d == -8888 ? "#EDEBEB" :
+				d == 0 ? "#EDEBEB" :
 				d > grades[4]  ? '#3E9000' :
 				d > grades[3]   ? '#8DB22A' :
 				d > grades[2]   ? '#D2E596' :
@@ -315,12 +316,12 @@ editDiversity.onNewCounty = function(props) {
   <br>
   <select id="income" onchange="updateDataset()">
   <option value='all'>All</option>
-  <option value='hi'>High [>120% AMI]</option>
-  <option value='mi'>Middle [80%-120% AMI]</option>
-  <option value='lwi'>Low [<80% AMI]</option>
+  <option value='h'>High [>120% AMI]</option>
+  <option value='m'>Middle [80%-120% AMI]</option>
+  <option value='li'>Low [<80% AMI]</option>
 
-  <option value='vli'>Very Low [<50% AMI]</option>
-  <option value='eli'>Extremley Low [<30% AMI]</option>
+  <option value='vl'>Very Low [<50% AMI]</option>
+  <option value='el'>Extremley Low [<30% AMI]</option>
   </select>
   <br>
   `
