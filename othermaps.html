@@ -12,6 +12,15 @@
 
 
 	<style>
+	.desc {
+	      padding: 8px 8xfpx;
+	      font: 14px/16px Arial, Helvetica, sans-serif;
+	      background: white;
+	      background: rgba(255, 255, 255, 0.8);
+	      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+	      border-radius: 5px;
+	      width: 98%;
+	    }
 		html, body {
 			height: 100%;
 			margin: 0;
@@ -85,7 +94,7 @@
 			if (props[property_to_display] == 0) {
 				this._div.innerHTML = "Unreliable Data";
 		} else {
-				this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' median percent change in rent';
+				this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + '% change in inflation-adjusted median rent (2000-2015)';
 		}
 		} else {
 			if (props[property_to_display] == -8888 || props[property_to_display] == 0) {
@@ -98,6 +107,35 @@
 	};
 
 	info.addTo(map);
+
+	// =============================================
+	// SHOWS DESCRIPTION OF DATASET BEFORE CLICKING ON A COUNTY
+	// =============================================
+	//var desc = L.control({ position: "bottomright" });
+	var desc = L.control();
+	desc.onAdd = function(map) {
+		this._div = L.DomUtil.create("div", "desc");
+		this.update();
+		return this._div;
+	};
+	desc.update = function() {
+		this._div.innerHTML =
+			//"<h4># of people that were moved from SF</h4>" +
+			"<b>Description of the Dataset</b>" + "<br> <br>" +
+			`“In my younger and more vulnerable years my father gave me
+			some advice that I've been turning over in my mind ever since.
+			"Whenever you feel like criticizing any one," he told me, "just remember
+			that all the people in this world haven't had the advantages that you've had."`
+			+ "<br>" +
+			 "<button onclick='closeDesc()'>Close</button>";
+	};
+	desc.addTo(map);
+	function closeDesc() {
+			map.removeControl(desc);
+	}
+	function showDesc() {
+		desc.addTo(map);
+	}
 
 	// =====================
 	// Add selection
@@ -217,7 +255,7 @@
 			from, to;
 		if (document.getElementById("dataSetOption").value == "rent") {
 			grades = [-30, -15, -5, 5, 15, 30];
-			legend_str = "Change in Median Rent (% change)";
+			legend_str = "Change in inflation-adjusted median rent, 2000-2015 (% change)";
 			labels.push('<i style="background:' + getColor(0) + '"></i> ' + "Unreliable Data");
 			labels.push('<i style="background:' + getColor(-30 - 1) + '"></i> ' + "Decrease >30% ");
 			labels.push('<i style="background:' + getColor(-15 - 1) + '"></i> ' + "Decrease 15 - 30% ");
@@ -249,7 +287,7 @@
 		*/
 		labels = labels.reverse();
 		//div.innerHTML = labels.join('<br>');
-		div.innerHTML = "<p style='font-size:13px; padding: 0; margin: 0;'> <b>"+ legend_str +"</b> </p> " + labels.join('<br>');;
+		div.innerHTML = "<p style='font-size:13px; padding: 0; margin: 0; width:200px;'> <b>"+ legend_str +"</b> </p> " + labels.join('<br>');;
 		return div;
 	};
 

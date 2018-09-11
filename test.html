@@ -20,15 +20,15 @@
       border-radius: 5px;
     }
 
-    .desc {
-          padding: 8px 8xfpx;
-          font: 14px/16px Arial, Helvetica, sans-serif;
-          background: white;
-          background: rgba(255, 255, 255, 0.8);
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-          border-radius: 5px;
-          width: 98%;
-        }
+.desc {
+      padding: 8px 8xfpx;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      width: 98%;
+    }
 
     .distribution {
       padding: 6px 8px;
@@ -113,7 +113,8 @@
 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 return parts.join(".");
 }*/
-return x
+return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
     }
 
     var dataset_forcolor = "";
@@ -272,7 +273,7 @@ return x
           ? /*"<b>"*/
             props.NAME10 +
             /*"</b>*/"<br />" +
-            props[dataset_forcolor] +
+            numberWithCommas(props[dataset_forcolor]) +
             " people"
           : "Hover over a destination");
       } else {
@@ -322,16 +323,19 @@ return x
     stateDistribution.onAdd = function(map) {
       this._div = L.DomUtil.create("div", "distribution");
       this._div.style.width = document.getElementsByClassName("filter")[0].offsetWidth;
-      this.click();
+      //this.click();
       return this._div;
     };
     stateDistribution.click = function(props) {
       //if (selectedLayer != null) {
-      this._div.innerHTML =
-        "<b>" + "# of people from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
-        "Out of Region: " + pumaData["features"][74]["properties"][props] + "<br>" +
-        "Out of State: " + numberWithCommas(pumaData["features"][75]["properties"][props]);
 
+      console.log(pumaData["features"][75]["properties"][props]);
+
+      this._div.innerHTML =
+        "<b>" + "# people from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
+        "Out of Region: " + numberWithCommas(pumaData["features"][74]["properties"][props]) + "<br>" +
+      "Out of State: " + numberWithCommas(pumaData["features"][75]["properties"][props]);
+        //"Out of State: " + pumaData["features"][75]["properties"][props];
     };
 
     // MY CODE
