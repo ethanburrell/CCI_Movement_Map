@@ -332,7 +332,7 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       console.log(pumaData["features"][75]["properties"][props]);
 
       this._div.innerHTML =
-        "<b>" + "# people from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
+        "<b>" + "# People from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
         "Out of Region: " + numberWithCommas(pumaData["features"][74]["properties"][props]) + "<br>" +
       "Out of State: " + numberWithCommas(pumaData["features"][75]["properties"][props]);
         //"Out of State: " + pumaData["features"][75]["properties"][props];
@@ -530,7 +530,7 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
       }
-      div.innerHTML = "<p style='font-size:13x; padding: 0; margin: 0;'> # of people who moved: </p> " + labels.join("<br>");
+      div.innerHTML = "<b> <p style='font-size:13px; padding: 0; margin: 0; width:100px;'> # People Who Moved: </p> </b>" + labels.join("<br>");
       return div;
 
     };
