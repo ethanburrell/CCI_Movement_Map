@@ -1,7 +1,7 @@
 <html><head>
 
-	<title>Choropleth Tutorial - Leaflet</title>
-
+	<title>Rent and Demographic Maps</title>
+	<link type="text/css" rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300,300italic,700,700italic,800,800italic,italic,regular&amp;subset=latin" media="all">
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -12,15 +12,19 @@
 
 
 	<style>
+	h1, h2, h3, h4, p {
+		/*font-family: 'Open Sans', sans-serif;*/
+	}
 	.desc {
-	      padding: 8px 8xfpx;
+	      padding: 16px 16px;
 	      font: 14px/16px Arial, Helvetica, sans-serif;
 	      background: white;
 	      background: rgba(255, 255, 255, 0.8);
 	      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 	      border-radius: 5px;
-	      width: 98%;
+	      width: calc(96% - 32px);
 	    }
+
 		html, body {
 			height: 100%;
 			margin: 0;
@@ -112,7 +116,7 @@
 	// SHOWS DESCRIPTION OF DATASET BEFORE CLICKING ON A COUNTY
 	// =============================================
 	//var desc = L.control({ position: "bottomright" });
-	var desc = L.control();
+	var desc = L.control({position: 'topleft'});
 	desc.onAdd = function(map) {
 		this._div = L.DomUtil.create("div", "desc");
 		this.update();
@@ -121,13 +125,16 @@
 	desc.update = function() {
 		this._div.innerHTML =
 			//"<h4># of people that were moved from SF</h4>" +
-			"<b>Description of the Dataset</b>" + "<br> <br>" +
-			`“In my younger and more vulnerable years my father gave me
-			some advice that I've been turning over in my mind ever since.
-			"Whenever you feel like criticizing any one," he told me, "just remember
-			that all the people in this world haven't had the advantages that you've had."`
-			+ "<br>" +
-			 "<button onclick='closeDesc()'>Close</button>";
+			"<p><b>Description of the Dataset</b>" + "<br> <br>" +
+			`These maps illustrate changes in tract-level median rent (inflation adjusted)
+			and demographics between 2000 and 2015 for the 9-County Bay Area Region.
+			Select the Rent or Demographics map below. When selecting the Demographic
+			Change Map, filter by the race and income group of interest. This data
+			comes from the 2000 U.S. Census (2000) and American Community Survey (2011-2015).
+			<br><br>
+			Created by Center for Community Innovation </p><br>`
+			+ 
+			 "<button onclick='closeDesc()'>Close</button> <br>";
 	};
 	desc.addTo(map);
 	function closeDesc() {
@@ -262,8 +269,8 @@
 			labels.push('<i style="background:' + getColor(-5 - 1) + '"></i> ' + "Decrease 5 - 15% ");
 			labels.push('<i style="background:' + getColor(-5 + 1) + '"></i> ' + "Minimal Change (+/- 5%)");
 			labels.push('<i style="background:' + getColor(5 + 1) + '"></i> ' + "Increase 5 - 15% ");
-			labels.push('<i style="background:' + getColor(15 + 1) + '"></i> ' + "Increase 15 &ndash; 30%");
-			labels.push('<i style="background:' + getColor(30 + 1) + '"></i> ' + "Increase >30%");
+			labels.push('<i style="background:' + getColor(15 + 1) + '"></i> ' + "Increase 15 - 30%");
+			labels.push('<i style="background:' + getColor(30 + 1) + '"></i> ' + "Increase 30 - 50%");
 			labels.push('<i style="background:' + getColor(50 + 1) + '"></i> ' + "Increase >50%");
 
 		} else {
@@ -314,6 +321,9 @@ function updateDataset() {
 		if(editDiversity._map == null) {
     	editDiversity.addTo(map);
 		}
+		/*
+		map.removeControl(filter);
+		filter.addTo(map);*/
     dataset = demoData;
 		map.removeLayer(geojson);
 		map.removeControl(legend);
@@ -333,7 +343,7 @@ function drawDataset() {
 }
 
 
-var editDiversity = L.control({position: 'topleft'});
+var editDiversity = L.control({position: 'bottomleft'}); //topleft
 editDiversity.onAdd = function(map) {
   this._div = L.DomUtil.create("div", "filter");
   this.onNewCounty();
