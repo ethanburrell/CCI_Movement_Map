@@ -193,7 +193,7 @@ function createInfo(change) {
 	filter.onNewCounty = function(props) {
 	  this._div.innerHTML =
 	`
-	<p style="margin:0px; padding:0px;"><b>Select a Map</b></p>
+	<p style="color: #555; font-size:13px; padding: 0; margin: 0; width:200px;"> <b>Select a Map</b> </p>
 	<select id="dataSetOption" onchange="updateDataset()">
 	<option value='rent'>Change in Median Rent</option>
 	<option value='demographics'>Demographic Change</option>
@@ -388,7 +388,7 @@ editDiversity.onAdd = function(map) {
 editDiversity.onNewCounty = function(props) {
   this._div.innerHTML =
   `
-  <p style="margin:0; padding:0;"><b>Select a demographic:</b></p>
+	<p style="color: #555; font-size:13px; padding: 0; margin: 0; width:200px;"> <b>Select a demographic:</b> </p>
   <select id="race" onchange="updateDataset()">
   <option value='all'>All</option>
   <option value='asn'>Asian-Pacific Islander</option>
