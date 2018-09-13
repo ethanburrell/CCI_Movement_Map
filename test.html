@@ -254,7 +254,7 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }).addTo(map);
 
     var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
-            attribution: '©OpenStreetMap, ©CartoDB, Dataset <a href="https://usa.ipums.org/usa/"> IPUMS </a>',
+            attribution: '©OpenStreetMap, ©CartoDB, Data Source: <a href="https://usa.ipums.org/usa/"> IPUMS </a>',
             pane: 'labels'
     }).addTo(map);
 
@@ -353,6 +353,7 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   `
   <button onclick="resetCounty()">Choose new county</button>
   <br>
+  <b> Select a demographic:</b> <br>
   <select id="race" onchange="updateDataset()">
   <option value='z'>All</option>
   <option value='api'>Asian-Pacific Islander</option>

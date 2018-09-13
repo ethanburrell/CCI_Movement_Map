@@ -29,10 +29,6 @@
 			height: 100%;
 			margin: 0;
 		}
-		#map {
-			width: 600px;
-			height: 400px;
-		}
 
     .filter {
       text-align: left;
@@ -45,7 +41,8 @@
     }
 	</style>
 
-	<style>#map { width: 800px; height: 500px; }
+	<style>
+	#map { width: 800px; height: 500px; }
 .info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
 .legend { text-align: left; line-height: 18px; color: #555; } .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }</style>
 </head>
@@ -76,10 +73,43 @@
 	}).addTo(map);
 
 	var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
-					attribution: '©OpenStreetMap, ©CartoDB, Dataset <a href="https://www.census.gov/programs-surveys/acs/data.html"> U.S. Census 2000, American Community Survey 2011-2015. </a>',
+					attribution: '©OpenStreetMap, ©CartoDB, Data Source: <a href="https://www.census.gov/programs-surveys/acs/data.html"> U.S. Census 2000, American Community Survey 2011-2015. </a>',
 					pane: 'labels'
 	}).addTo(map);
 
+function createInfo(change) {
+	var income_abbr = {
+			"el": "Extremely Low", //[<30% AMI]
+			"vl": "Very Low", //[<50% AMI]
+			"li": "Low", //[50%-80% AMI]
+			"lw": "Low", // [<80% AMI]
+			"m": "Middle", //[80%-120% AMI]
+			"h": "High", //[>120% AMI]
+			"z": "All"
+	}
+	var race_abbr = {
+			"wht": "White",
+			"hsp": "Latinx",
+			"blk": "Black",
+			"asn": "Asian-Pacific Islander",
+			"poc": "People Of Color",
+			"all": "All"
+	}
+	var i = property_to_display.split("_")[0]; // RACE
+	var j = property_to_display.split("_")[1]; //INCOME
+	var race = race_abbr[j];
+	var income = income_abbr[i];
+	change = Math.round(change * 100) / 100
+	if (i == "all" && j == "all") {
+			return change + " Change in # of Households";
+	} else if (i == "all") {
+			return  change + " in" + " all " + race + " Households";
+	} else if (j == "all") {
+			return change + " in" + " all " + income + " Income Households";
+	} else {
+			return change + " " + income + " Income " + race + " Households";
+	}
+}
 
 	// control that shows state info on hover
 	var info = L.control();
@@ -104,7 +134,12 @@
 			if (props[property_to_display] == -8888 || props[property_to_display] == 0) {
 				this._div.innerHTML = "Unreliable Data";
 			} else {
-			this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + ' Change in # of Households';
+				if (Math.round(props[property_to_display] * 100) >= 0) {
+					this._div.innerHTML = "+" + createInfo(props[property_to_display]);
+				} else {
+					this._div.innerHTML = createInfo(props[property_to_display]);
+				}
+
 		}
 		}
 	}
@@ -133,7 +168,7 @@
 			comes from the 2000 U.S. Census (2000) and American Community Survey (2011-2015).
 			<br><br>
 			Created by Center for Community Innovation </p><br>`
-			+ 
+			+
 			 "<button onclick='closeDesc()'>Close</button> <br>";
 	};
 	desc.addTo(map);
@@ -158,6 +193,7 @@
 	filter.onNewCounty = function(props) {
 	  this._div.innerHTML =
 	`
+	<p style="margin:0px; padding:0px;"><b>Select a Map</b></p>
 	<select id="dataSetOption" onchange="updateDataset()">
 	<option value='rent'>Change in Median Rent</option>
 	<option value='demographics'>Demographic Change</option>
@@ -275,7 +311,7 @@
 
 		} else {
 			grades = [-30, -15, -5, -5, 5, 15, 30];
-			legend_str = "Change in Number of Households";
+			legend_str = "Change in Number of Households (count)";
 			labels.push('<i style="background:' + getColor(-8888) + '"></i> ' + "Unreliable Data");
 			labels.push('<i style="background:' + getColor(-100 - 1) + '"></i> ' + "Decrease > 100");
 			labels.push('<i style="background:' + getColor(-50 - 1) + '"></i> ' + "Decrease 50 - 100");
@@ -352,7 +388,7 @@ editDiversity.onAdd = function(map) {
 editDiversity.onNewCounty = function(props) {
   this._div.innerHTML =
   `
-  <br>
+  <p style="margin:0; padding:0;"><b>Select a demographic:</b></p>
   <select id="race" onchange="updateDataset()">
   <option value='all'>All</option>
   <option value='asn'>Asian-Pacific Islander</option>
