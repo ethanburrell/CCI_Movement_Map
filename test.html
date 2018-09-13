@@ -76,8 +76,6 @@
   <script src="puma-data.js" > </script>
   <script src="county-data.js" > </script>
 
-
-
   <script>
 
     var infoSentece = null;
@@ -108,17 +106,19 @@
     //}
     }
 
+    // Puts commas in 1000s place like so
+    // 1000 -> 1,000
+    // @params: x (int)
+    // returns String
     function numberWithCommas(x) {
-        /*if (x != null) {
-      var parts = x.split(".");
-parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-return parts.join(".");
-}*/
-return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
     var dataset_forcolor = "";
+    // Selects the correct coloring of the map from the string dataset
+    // Helper function to updateDataset
+    // @params: dataset (String) EG so_z_z sonoma_all_all
+    // void
     function displayDataSet(dataset) {
       console.log(dataset);
       generateCutoffs(dataset);
@@ -129,7 +129,9 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         onEachFeature: onEachFeature
       }).addTo(map);
     }
-
+    // function that looks at the selection in the dropdowns and selects the and
+    // displays the data for the correct county
+    // void
     function updateDataset() {
       var dataset = selecteDataSet(selectedLayer.feature.properties.county);
       displayDataSet(dataset);
@@ -137,13 +139,16 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       //legend.update(map);
       legend.addTo(map);
     }
-
+    //Converts Items to title case
+    // "uc berkreley memes for edgy" -> "Uc Berkreley Memes For Edgy"
     function toTitleCase(str) {
         return str.replace(/\w\S*/g, function(txt){
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
     }
+
     var county_outline = null;
+    //Ignore this function does not work well.
     function createCountyOutline() {
       county_cap = toTitleCase(county_current)
       for (i in county_data["features"]) {
@@ -158,7 +163,9 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
       //county_outline.addTo(map);
     }
-
+    // Creates the "sentence" that displays on hover over a puma (in the top left called the info control)
+    // @params: incone, race, county (String)
+    // returns the sentence!
     function createInfoSentence(income, race, county) {
     county = toTitleCase(county);
     var income_abbr = {
@@ -192,15 +199,14 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
           return income +" Income "+ race +" who moved from " + county + " County to:";
       }
     }
-
+    // This de-selects the current county and reverts the GUI/removes coloring
+    // void
     function resetCounty() {
       //county_current = ""
       window.map.removeLayer(geojson);
       map.removeControl(stateDistribution);
       map.removeControl(legend);
-      //map.removeControl(info);
 
-      //legend.removeLayer(map);
       selectedLayer = null;
       infoSentece = null;
       geojson = L.geoJson(county_data, {
@@ -208,10 +214,10 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         onEachFeature: onEachFeature
       }).addTo(map);
       info.addTo(map);
-      //info.addTo(desc);
     }
 
     var colorCutoffs = [];
+    // NOT NEEDED IF YOU ARE NOT USING DYNAMIC BINS FOR THE LEGEND
     function generateCutoffs(dataset){
       arr = [];
       for (i in pumaData["features"]) {
@@ -232,18 +238,10 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
     var map = L.map("map").setView([37.8735, -122.4566], 8);
-    //37.8735° N, 122.4566  37.7749, -122.4194
-    /*
-    L.tileLayer(
-      "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw",
-      {
-        maxZoom: 18,
-        attribution:
-          'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a>' +
-          'Imagery © <a href="http://mapbox.com">Carto</a>',
-        id: "mapbox.light"
-      }
-    ).addTo(map);*/
+
+    // =================================
+    // CREATE THE MAP AND STYLE IT
+    // =================================
     //STYLE OF MAP
     map.createPane('labels');
     map.getPane('labels').style.zIndex = 650;
@@ -258,6 +256,12 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             pane: 'labels'
     }).addTo(map);
 
+
+    // =================================
+    // CREATES THE CONTROL IN THE UPPER RIGHT HAND
+    // CORNER THAT DISPLAYS THE COUNT OF PEOPLE ON HOVER
+    // OVER A PUMA
+    // =================================
     // control that shows state info on hover
     var info = L.control();
     info.onAdd = function(map) {
@@ -265,15 +269,17 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       this.update();
       return this._div;
     };
+    //When the user hovers other pumas, this functoin gets called,
+    // It is primarily in charge for assembling the sentence (created in functions above)
+    // and displaying them in the control.
     info.update = function(props) {
       if (selectedLayer && infoSentece) {
       this._div.innerHTML =
-        //"<h4># of people that were moved from SF</h4>" +
         "<b>" + infoSentece + "</b>" + "<br>" +
         (props
-          ? /*"<b>"*/
+          ?
             props.NAME10 +
-            /*"</b>*/"<br />" +
+            "<br />" +
             numberWithCommas(props[dataset_forcolor]) +
             " people"
           : "Hover over a destination");
@@ -327,19 +333,18 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       //this.click();
       return this._div;
     };
+    // A note here, there are only 73 pumas in the bay area. We coded 74 and 75
+    // to be somewhere in the south USA. These have the out of state and out of
+    // county numbers. You will have to do the same. These must also have a physical
+    // location on the map or geoJson will not work with it.
     stateDistribution.click = function(props) {
-      //if (selectedLayer != null) {
-
       console.log(pumaData["features"][75]["properties"][props]);
-
       this._div.innerHTML =
         "<b>" + "# People from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
         "Out of Region: " + numberWithCommas(pumaData["features"][74]["properties"][props]) + "<br>" +
       "Out of State: " + numberWithCommas(pumaData["features"][75]["properties"][props]);
-        //"Out of State: " + pumaData["features"][75]["properties"][props];
     };
 
-    // MY CODE
     // ADD PART TO MAP THAT ALLOWS USER TO FILTER THE INFORMATION
     // control that shows state info on hover
     var filter = L.control({position: 'bottomleft'});
@@ -396,11 +401,12 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         ? "#FC4E2A"
         : d > grades[2]
         ? "#FD8D3C"
-        : d > grades[1] ? "#FEB24C"
-        //: d > colorCutoffs[1] ? "#FED976"
+        : d > grades[1]
+        ? "#FEB24C"
         : d > grades[0] + 1 ? "#FED976"
         : "#ffedc8"; // #FFEDA0
     }
+    // defines style of the counies
     function style(feature) {
       return {
         weight: 2,
@@ -411,6 +417,7 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         fillColor: getColor(feature.properties[dataset_forcolor])//feature.properties.sf_li_all
       };
     }
+    // only used for creating the county outline which is not working rn.
     function style2() {
       return {
         weight: 2,
@@ -421,6 +428,7 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         fillColor: black//feature.properties.sf_li_all
       };
     }
+
     //THE CODE THAT I AM WRITING TO HAVE YOU BE
     // ABLE TO SELECT A STATE AND THEN SEE THE DISPALCEMENT
     // AMOUNTS OF OTHER PUMAS
@@ -456,34 +464,21 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
     }
 
-
+    // resets the bolder bolding on hover, also calls to update the info gui
     function resetHighlight(e) {
       geojson.resetStyle(e.target);
       info.update();
-      /*
-      if (e.target != lastclick) {
-      geojson.resetStyle(e.target);
-      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        //selectedLayer.bringToFront();
-      }
-      info.update(selectedLayer.feature.properties);
-    }*/
     }
 
     // BACK TO NORMAL CODE
+    // VERY IMPORTANT, THIS TELLS THE MAP WHAT TO DO WHEN CLICKED,
+    //AND INTERACTED WITH
     function onEachFeature(feature, layer) {
       layer.on({
         mouseover: viewData,
         mouseout: resetHighlight,
         click: selectState
       });
-      /*layer.on('click', function(e){
-          if(lastclick) {
-               geojson.resetStyle(e.target);
-               info.update();
-             }
-          lastclick = e.target;
-     });*/
     }
 
     //USE county_data or pumaData or county_data
@@ -492,9 +487,14 @@ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       onEachFeature: onEachFeature
     }).addTo(map);
 
-/*    map.attributionControl.addAttribution(
-      'Population data &copy; <a href="http://census.gov/">US Census Bureau</a>'
-    );*/
+    // =================================
+    // CREATE THE LEGEND AND PUT INFORMAITON IN SIDE OF IT.
+    /*
+        This is all done by changing the grades array. You must make
+        sure this funciton and getColor() work correctly together or
+        otherwise you'll have wrongly colored boundaries.
+    */
+    // =================================
     var legend = L.control({ position: "bottomright" });
     legend.onAdd = function(map) {
       var div = L.DomUtil.create("div", "info legend"),
