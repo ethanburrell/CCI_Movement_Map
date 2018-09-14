@@ -391,12 +391,13 @@ editDiversity.onAdd = function(map) {
   return this._div;
 };
 editDiversity.onNewCounty = function(props) {
+	//sian-Pacific Islander
   this._div.innerHTML =
   `
 	<p style="color: #555; font-size:13px; padding: 0; margin: 0; width:200px;"> <b>Select a demographic:</b> </p>
   <select id="race" onchange="updateDataset()">
   <option value='all'>All</option>
-  <option value='asn'>Asian-Pacific Islander</option>
+  <option value='asn'>Asian</option>
   <option value='blk'>Black</option>
   <option value='hsp'>Latinx</option>
   <option value='poc'>All People of Color</option>

@@ -1,0 +1,545 @@
+<html>
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+<style>
+body {
+margin: 0;
+}
+#map {
+      width: 100%;
+      height: 100%;
+    }
+.info {
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+
+.desc {
+      /*padding: 8px 8xfpx;*/
+      padding: 16px 16px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      width: calc(96% - 32px);
+    }
+
+    .distribution {
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      float: left;
+      text-align: left;
+    }
+    .info h4 {
+      margin: 0 0 5px;
+      color: #777;
+    }
+    .legend {
+      text-align: left;
+      line-height: 18px;
+      color: #555;
+    }
+    .legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.7;
+    }
+    .filter {
+      text-align: left;
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+</style>
+</head>
+<body>
+<div id="map" > </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <script src="puma-data.js" > </script>
+  <script src="county-data.js" > </script>
+
+  <script>
+
+    var infoSentece = null;
+    var county_abbr = {
+    "alameda": "a",
+    "napa": "n",
+    "santa clara": "sc",
+    "contra costa": "cc",
+    "san francisco": "sf",
+    "solano": "so",
+    "marin": "ma",
+    "san mateo": "sm",
+    "sonoma": "so",
+    "sf": "sf",
+    "cc": "cc",
+    "sm": "sm",
+    "sc": "sc"
+    }
+    var county_current = "";
+    function selecteDataSet(county_name) {
+      //if (selectedLayer == null) {
+      county_name = county_name.toLowerCase();
+      county_current = county_name;
+      //if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
+        infoSentece = createInfoSentence(document.getElementById("income").value, document.getElementById("race").value, county_name);
+        return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
+      //}
+    //}
+    }
+
+    // Puts commas in 1000s place like so
+    // 1000 -> 1,000
+    // @params: x (int)
+    // returns String
+    function numberWithCommas(x) {
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    var dataset_forcolor = "";
+    // Selects the correct coloring of the map from the string dataset
+    // Helper function to updateDataset
+    // @params: dataset (String) EG so_z_z sonoma_all_all
+    // void
+    function displayDataSet(dataset) {
+      console.log(dataset);
+      generateCutoffs(dataset);
+      dataset_forcolor = dataset;
+      window.map.removeLayer(geojson);
+      geojson = L.geoJson(pumaData, {
+        style: style,
+        onEachFeature: onEachFeature
+      }).addTo(map);
+    }
+    // function that looks at the selection in the dropdowns and selects the and
+    // displays the data for the correct county
+    // void
+    function updateDataset() {
+      var dataset = selecteDataSet(selectedLayer.feature.properties.county);
+      displayDataSet(dataset);
+      stateDistribution.click(dataset_forcolor);
+      //legend.update(map);
+      legend.addTo(map);
+    }
+    //Converts Items to title case
+    // "uc berkreley memes for edgy" -> "Uc Berkreley Memes For Edgy"
+    function toTitleCase(str) {
+        return str.replace(/\w\S*/g, function(txt){
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
+    }
+
+    var county_outline = null;
+    //Ignore this function does not work well.
+    function createCountyOutline() {
+      county_cap = toTitleCase(county_current)
+      for (i in county_data["features"]) {
+        if (county_cap == county_data["features"][i]["properties"]["county"]) {
+          //county_outline = county_data["features"][i]["geometry"]["coordinates"];
+          county_outline = new L.Polygon(county_data["features"][i]["geometry"]["coordinates"]).addTo(map);
+          county_outline.setStyle(style2);
+        }
+      }
+
+
+
+      //county_outline.addTo(map);
+    }
+    // Creates the "sentence" that displays on hover over a puma (in the top left called the info control)
+    // @params: incone, race, county (String)
+    // returns the sentence!
+    function createInfoSentence(income, race, county) {
+    county = toTitleCase(county);
+    var income_abbr = {
+        "el": "Extremely Low", //[<30% AMI]
+        "vl": "Very Low", //[<50% AMI]
+        "li": "Low", //[50%-80% AMI]
+        "lw": "Low", // [<80% AMI]
+        "m": "Middle", //[80%-120% AMI]
+        "h": "High", //[>120% AMI]
+        "z": "All"
+    }
+    i = income;
+    income = income_abbr[income];
+    var race_abbr = {
+        "wht": "White",
+        "hsp": "Latinx",
+        "blk": "Black",
+        "api": "Asian-Pacific Islander",
+        "poc": "People Of Color",
+        "z": "All"
+    }
+    r = race;
+    race = race_abbr[race]
+      if (i == "z" && r == "z") {
+          return "All people who moved from " + county + " County to:";
+      } else if (i == "z") {
+          return "All "+ race +" who moved from " + county + " County to:";
+      } else if (r == "z") {
+          return "All "+ income +" Income who moved from " + county + " County to:";
+      } else {
+          return income +" Income "+ race +" who moved from " + county + " County to:";
+      }
+    }
+    // This de-selects the current county and reverts the GUI/removes coloring
+    // void
+    function resetCounty() {
+      //county_current = ""
+      window.map.removeLayer(geojson);
+      map.removeControl(stateDistribution);
+      map.removeControl(legend);
+
+      selectedLayer = null;
+      infoSentece = null;
+      geojson = L.geoJson(county_data, {
+        style: style,
+        onEachFeature: onEachFeature
+      }).addTo(map);
+      info.addTo(map);
+    }
+
+    var colorCutoffs = [];
+    // NOT NEEDED IF YOU ARE NOT USING DYNAMIC BINS FOR THE LEGEND
+    function generateCutoffs(dataset){
+      arr = [];
+      for (i in pumaData["features"]) {
+          arr.push(parseInt(pumaData["features"][i]["properties"][dataset]))
+      }
+      range = Math.max(...arr) - 0; //Math.min(arr);
+      bucket_width = parseInt(range / 7);
+      var curr = 0;
+      cutoffs = [0]
+      for (var i = 1; i < 8; i++) {
+        cutoffs.push(curr);
+        curr = curr + bucket_width;
+      }
+      //return cutoffs;
+      console.log(cutoffs);
+      colorCutoffs = cutoffs;
+      //colorCutoffs = [0, 200, 400, 600, 800, 1000, 1200, 1600];
+    }
+
+    var map = L.map("map").setView([37.8735, -122.4566], 8);
+
+    // =================================
+    // CREATE THE MAP AND STYLE IT
+    // =================================
+    //STYLE OF MAP
+    map.createPane('labels');
+    map.getPane('labels').style.zIndex = 650;
+    map.getPane('labels').style.pointerEvents = 'none';
+
+    var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+            //attribution: '©OpenStreetMap, ©CartoDB'
+    }).addTo(map);
+
+    var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+            attribution: '©OpenStreetMap, ©CartoDB, Data Source: <a href="https://usa.ipums.org/usa/"> IPUMS </a>',
+            pane: 'labels'
+    }).addTo(map);
+
+
+    // =================================
+    // CREATES THE CONTROL IN THE UPPER RIGHT HAND
+    // CORNER THAT DISPLAYS THE COUNT OF PEOPLE ON HOVER
+    // OVER A PUMA
+    // =================================
+    // control that shows state info on hover
+    var info = L.control();
+    info.onAdd = function(map) {
+      this._div = L.DomUtil.create("div", "info");
+      this.update();
+      return this._div;
+    };
+    //When the user hovers other pumas, this functoin gets called,
+    // It is primarily in charge for assembling the sentence (created in functions above)
+    // and displaying them in the control.
+    info.update = function(props) {
+      if (selectedLayer && infoSentece) {
+      this._div.innerHTML =
+        "<b>" + infoSentece + "</b>" + "<br>" +
+        (props
+          ?
+            props.NAME10 +
+            "<br />" +
+            numberWithCommas(props[dataset_forcolor]) +
+            " people"
+          : "Hover over a destination");
+      } else {
+        this._div.innerHTML =
+          (props
+            ? "<b>" +
+              props.county +
+              " County"
+            : "Hover over a county");
+      }
+    };
+    info.addTo(map);
+    // =============================================
+    // SHOWS DESCRIPTION OF DATASET BEFORE CLICKING ON A COUNTY
+    // =============================================
+    //var desc = L.control({ position: "bottomright" });
+    var desc = L.control({position: 'topleft'});
+    desc.onAdd = function(map) {
+      this._div = L.DomUtil.create("div", "desc");
+      this.update();
+      return this._div;
+    };
+    desc.update = function() {
+      this._div.innerHTML =
+        //"<h4># of people that were moved from SF</h4>" +
+        "<b>Description of the Dataset</b>" + "<br> <br>" +
+        `This migration data shows people who moved in 2015. Start by clicking
+        on the county of origin, then select the race and income group of interest.
+        The map will show where movers from this county went (within Northern California),
+        as well as provide data on people who left the region and state. This
+        data comes from the ACS 1-year Public Use Microdata Sample (PUMS) for 2015.`
+        + "<br><br>" +
+         "<button onclick='closeDesc()'>Close</button>";
+    };
+    desc.addTo(map);
+    function closeDesc() {
+        map.removeControl(desc);
+    }
+    function showDesc() {
+      desc.addTo(map);
+    }
+    // =============================================
+    // SHOWS INSTATE / OUT OF STATE DISTRIBUTION
+    // =============================================
+    var stateDistribution = L.control({ position: "bottomleft" });
+    stateDistribution.onAdd = function(map) {
+      this._div = L.DomUtil.create("div", "distribution");
+      this._div.style.width = document.getElementsByClassName("filter")[0].offsetWidth;
+      //this.click();
+      return this._div;
+    };
+    // A note here, there are only 73 pumas in the bay area. We coded 74 and 75
+    // to be somewhere in the south USA. These have the out of state and out of
+    // county numbers. You will have to do the same. These must also have a physical
+    // location on the map or geoJson will not work with it.
+    stateDistribution.click = function(props) {
+      console.log(pumaData["features"][75]["properties"][props]);
+      this._div.innerHTML =
+        "<b>" + "# People from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
+        "Out of Region: " + numberWithCommas(pumaData["features"][74]["properties"][props]) + "<br>" +
+      "Out of State: " + numberWithCommas(pumaData["features"][75]["properties"][props]);
+    };
+
+    // ADD PART TO MAP THAT ALLOWS USER TO FILTER THE INFORMATION
+    // control that shows state info on hover
+    var filter = L.control({position: 'bottomleft'});
+    filter.onAdd = function(map) {
+      this._div = L.DomUtil.create("div", "filter");
+      this.onNewCounty();
+      return this._div;
+    };
+    filter.onNewCounty = function(props) {
+      this._div.innerHTML =
+  `
+  <button onclick="resetCounty()">Choose new county</button>
+  <br>
+  <b> 	<p style="color: #555; font-size:13px; padding: 0; margin: 0; width:200px;"> <b>Select a demographic:</b> </p>
+
+  <select id="race" onchange="updateDataset()">
+  <option value='z'>All</option>
+  <option value='api'>Asian-Pacific Islander</option>
+  <option value='blk'>Black</option>
+  <option value='hsp'>Latinx</option>
+  <option value='poc'>All People of Color</option>
+  <option value='wht'>White</option>
+  </select>
+  <br>
+  <select id="income" onchange="updateDataset()">
+  <option value='z'>All</option>
+  <option value='h'>High [>120% AMI]</option>
+  <option value='m'>Middle [80%-120% AMI]</option>
+  <option value='lw'>Low [<80% AMI]</option>
+
+  <option value='vl'>Very Low [<50% AMI]</option>
+  <option value='el'>Extremely Low [<30% AMI]</option>
+  </select>
+  <br>
+  <button onclick='showDesc()'>Info</button>
+  `
+  //<option value='li'>Low [50%-80% AMI]</option>
+    };
+    filter.addTo(map);
+
+
+    // get color depending on population density value
+    function getColor(d) {
+      var grades = [0, 200, 400, 600, 800, 1000, 1200, 1600];
+      //5a001b
+      return  d > grades[7]
+        ? "#5a001b"
+        : d > grades[6]
+        ? "#800026"
+        : d > grades[5]
+        ? "#BD0026"
+        : d > grades[4]
+        ? "#E31A1C"
+        : d > grades[3]
+        ? "#FC4E2A"
+        : d > grades[2]
+        ? "#FD8D3C"
+        : d > grades[1]
+        ? "#FEB24C"
+        : d > grades[0] + 1 ? "#FED976"
+        : "#ffedc8"; // #FFEDA0
+    }
+    // defines style of the counies
+    function style(feature) {
+      return {
+        weight: 2,
+        opacity: 1,
+        color: "white",
+        dashArray: "3",
+        fillOpacity: 0.7,
+        fillColor: getColor(feature.properties[dataset_forcolor])//feature.properties.sf_li_all
+      };
+    }
+    // only used for creating the county outline which is not working rn.
+    function style2() {
+      return {
+        weight: 2,
+        opacity: 1,
+        color: "black",
+        dashArray: "1",
+        fillOpacity: 0,
+        fillColor: black//feature.properties.sf_li_all
+      };
+    }
+
+    //THE CODE THAT I AM WRITING TO HAVE YOU BE
+    // ABLE TO SELECT A STATE AND THEN SEE THE DISPALCEMENT
+    // AMOUNTS OF OTHER PUMAS
+    function viewData(e) {
+      var layer = e.target;
+      layer.setStyle({
+        weight: 5,
+        color: "#666",
+        dashArray: "",
+        fillOpacity: 0.7
+      });
+
+      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        layer.bringToFront();
+      }
+      info.update(layer.feature.properties);
+    }
+
+    var selectedLayer = null;
+    function selectState(e) {
+      if (selectedLayer == null) {
+      selectedLayer = e.target;
+      console.log(e.target.feature.properties.county);
+      dataset = selecteDataSet(e.target.feature.properties.county);
+      displayDataSet(dataset);
+      createCountyOutline();
+      //legend.update(map);
+      stateDistribution.addTo(map);
+      stateDistribution.click(dataset);
+      map.removeControl(desc);
+      info.addTo(map);
+      legend.addTo(map);
+    }
+    }
+
+    // resets the bolder bolding on hover, also calls to update the info gui
+    function resetHighlight(e) {
+      geojson.resetStyle(e.target);
+      info.update();
+    }
+
+    // BACK TO NORMAL CODE
+    // VERY IMPORTANT, THIS TELLS THE MAP WHAT TO DO WHEN CLICKED,
+    //AND INTERACTED WITH
+    function onEachFeature(feature, layer) {
+      layer.on({
+        mouseover: viewData,
+        mouseout: resetHighlight,
+        click: selectState
+      });
+    }
+
+    //USE county_data or pumaData or county_data
+    geojson = L.geoJson(county_data, {
+      style: style,
+      onEachFeature: onEachFeature
+    }).addTo(map);
+
+    // =================================
+    // CREATE THE LEGEND AND PUT INFORMAITON IN SIDE OF IT.
+    /*
+        This is all done by changing the grades array. You must make
+        sure this funciton and getColor() work correctly together or
+        otherwise you'll have wrongly colored boundaries.
+    */
+    // =================================
+    var legend = L.control({ position: "bottomright" });
+    legend.onAdd = function(map) {
+      var div = L.DomUtil.create("div", "info legend"),
+        //grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+        grades = [0, 1, 200, 400, 600, 800, 1000, 1200, 1600], //colorCutoffs
+        //grades = colorCutoffs,
+        labels = [],
+        from = 0,
+        to = 0;
+        labels.push(
+          '<i style="background:' +
+            getColor(from + 1) +
+            '"></i> ' +
+            from
+        );
+      for (var i = 1; i < grades.length; i++) {
+        from = grades[i];
+        to = grades[i + 1];
+        if (from == 0) {
+          labels.push(
+            '<i style="background:' +
+              getColor(from + 2) +
+              '"></i> ' +
+              parseInt(from + 1) +
+              (to ? "&ndash;" + to : "+")
+          );
+        } else {
+          labels.push(
+            '<i style="background:' +
+              getColor(from + 1) +
+              '"></i> ' +
+              from +
+              (to ? "&ndash;" + to : "+")
+          );
+        }
+
+      }
+      div.innerHTML = "<b> <p style='font-size:13px; padding: 0; margin: 0; width:100px;'> # People Who Moved: </p> </b>" + labels.join("<br>");
+      return div;
+
+    };
+    //legend.addTo(map);
+  </script>
+</body>
+</html>
