@@ -99,7 +99,8 @@ function createInfo(change) {
 	var j = property_to_display.split("_")[1]; //INCOME
 	var race = race_abbr[j];
 	var income = income_abbr[i];
-	change = Math.round(change * 100) / 100
+	//change = Math.round(change * 100) / 100
+	change = change.toString().split(".")[0]
 	if (i == "all" && j == "all") {
 			return change + "  Households";
 	} else if (i == "all") {
@@ -128,7 +129,9 @@ function createInfo(change) {
 			if (props[property_to_display] == 0) {
 				this._div.innerHTML = "Unreliable Data";
 		} else {
-				this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + '% change in inflation-adjusted median rent (2000-2015)';
+				//this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + '% change in inflation-adjusted median rent (2000-2015)';
+				this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + "% change in Median Rent (2000-2015, Inflation-Adjusted $, % Change)"
+				//props[property_to_display].toString().split(".")[0]
 		}
 		} else {
 			if (props[property_to_display] == -8888 || props[property_to_display] == 0) {
@@ -161,15 +164,14 @@ function createInfo(change) {
 		this._div.innerHTML =
 			//"<h4># of people that were moved from SF</h4>" +
 			"<p><b>Description of the Dataset</b>" + "<br> <br>" +
-			`These maps illustrate changes in median rent (inflation adjusted) and
+			`These maps illustrate changes in median rent (inflation-adjusted) and
 			demographics between 2000 and 2015 for the 9-County Bay Area Region.
 			Start by selecting either the Rent or Demographics map below.
 			The Demographic Change Map allows you to filter by the race and income group
 			of interest. This data comes from the U.S. Census (2000) and American Community Survey (2011-2015).
 
 
-			<br><br>
-			Created by Center for Community Innovation </p><br>`
+			<br>`
 			+
 			 "<button onclick='closeDesc()'>Close</button> <br>";
 	};
@@ -300,7 +302,8 @@ function createInfo(change) {
 			from, to;
 		if (document.getElementById("dataSetOption").value == "rent") {
 			grades = [-30, -15, -5, 5, 15, 30];
-			legend_str = "Change in Inflation-Adjusted Median Rent, 2000-2015 (% Change)";
+			//legend_str = "Change in Inflation-Adjusted Median Rent, 2000-2015 % Change)";
+			legend_str = "Change in Median Rent (2000-2015, Inflation-Adjusted $, % Change)";
 			labels.push('<i style="background:' + getColor(0) + '"></i> ' + "Unreliable Data");
 			labels.push('<i style="background:' + getColor(-30 - 1) + '"></i> ' + "Decrease >30% ");
 			labels.push('<i style="background:' + getColor(-15 - 1) + '"></i> ' + "Decrease 15 - 30% ");
@@ -404,10 +407,10 @@ editDiversity.onNewCounty = function(props) {
   <option value='all'>All</option>
   <option value='h'>High [>120% AMI]</option>
   <option value='m'>Middle [80%-120% AMI]</option>
-  <option value='li'>Low [<80% AMI]</option>
+  <option value='lw'>Low [<80% AMI]</option>
 
   <option value='vl'>Very Low [<50% AMI]</option>
-  <option value='el'>Extremley Low [<30% AMI]</option>
+  <option value='el'>Extremely Low [<30% AMI]</option>
   </select>
   <br>
   `
