@@ -282,7 +282,7 @@ margin: 0;
         (props
           ?
             props.NAME10 +
-            "<br />" +
+            "<br />  ~" +
             numberWithCommas(props[dataset_forcolor]) +
             " people"
           : "Hover over a destination");
@@ -314,7 +314,9 @@ margin: 0;
         on the county of origin, then select the race and income group of interest.
         The map will show where movers from this county went (within Northern California),
         as well as provide data on people who left the region and state. This
-        data comes from the ACS 1-year Public Use Microdata Sample (PUMS) for 2015.`
+        data comes from the ACS 1-year Public Use Microdata Sample (PUMS) for 2015.
+        The estimates in this map are rounded to the nearest hundred in recognition
+        of the uncertainty in the PUMS data.`
         + "<br><br>" +
          "<button onclick='closeDesc()'>Close</button>";
     };
