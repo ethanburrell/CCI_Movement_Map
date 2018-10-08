@@ -1,0 +1,422 @@
+<html><head>
+
+	<title>Rent and Demographic Maps</title>
+	<link type="text/css" rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300,300italic,700,700italic,800,800italic,italic,regular&amp;subset=latin" media="all">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin="">
+    <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js" integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA==" crossorigin=""></script>
+
+
+	<style>
+	h1, h2, h3, h4, p {
+		/*font-family: 'Open Sans', sans-serif;*/
+	}
+	.desc {
+	      padding: 16px 16px;
+	      font: 14px/16px Arial, Helvetica, sans-serif;
+	      background: white;
+	      background: rgba(255, 255, 255, 0.8);
+	      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+	      border-radius: 5px;
+	      width: calc(96% - 32px);
+	    }
+
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+
+    .filter {
+      text-align: left;
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+	</style>
+
+	<style>
+	#map { width: 100%; height: 100%; }
+.info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
+.legend { text-align: left; line-height: 18px; color: #555; } .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }</style>
+</head>
+<body>
+
+<div id="map" class="leaflet-container leaflet-touch leaflet-retina leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"> </div>
+<script src="rent-data.js"> </script>
+<script src="demo-data.js"> </script>
+
+<script type="text/javascript">
+	var grades = [-30, -15, -5, 5, 15, 30];
+
+	var map = L.map("map").setView([37.8735, -122.4566], 8);
+	var dataset = "rent";
+	var property_to_display = "mdpctchng";
+	geojson = L.geoJson(rentData, {
+		style: style,
+		onEachFeature: onEachFeature
+	}).addTo(map);
+
+	//STYLE OF MAP
+	map.createPane('labels');
+	map.getPane('labels').style.zIndex = 650;
+	map.getPane('labels').style.pointerEvents = 'none';
+
+	var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+					//attribution: '©OpenStreetMap, ©CartoDB'
+	}).addTo(map);
+
+	var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+					attribution: '©OpenStreetMap, ©CartoDB, Data Source: <a href="https://www.census.gov/programs-surveys/acs/data.html"> U.S. Census 2000, American Community Survey 2011-2015. </a>',
+					pane: 'labels'
+	}).addTo(map);
+
+function createInfo(change) {
+	var income_abbr = {
+			"el": "Extremely Low", //[<30% AMI]
+			"vl": "Very Low", //[<50% AMI]
+			"li": "Low", //[50%-80% AMI]
+			"lw": "Low", // [<80% AMI]
+			"m": "Middle", //[80%-120% AMI]
+			"h": "High", //[>120% AMI]
+			"z": "All"
+	}
+	var race_abbr = {
+			"wht": "White",
+			"hsp": "Latinx",
+			"blk": "Black",
+			"asn": "Asian-Pacific Islander",
+			"poc": "People Of Color",
+			"all": "All"
+	}
+	var i = property_to_display.split("_")[0]; // RACE
+	var j = property_to_display.split("_")[1]; //INCOME
+	var race = race_abbr[j];
+	var income = income_abbr[i];
+	//change = Math.round(change * 100) / 100
+	change = change.toString().split(".")[0]
+	if (i == "all" && j == "all") {
+			return change + "  Households";
+	} else if (i == "all") {
+			return  change + " in" + " all " + race + " Households";
+	} else if (j == "all") {
+			return change + " in" + " all " + income + " Income Households";
+	} else {
+			return change + " " + income + " Income " + race + " Households";
+	}
+}
+
+	// control that shows state info on hover
+	var info = L.control();
+
+	info.onAdd = function (map) {
+		this._div = L.DomUtil.create('div', 'info');
+		this.update();
+		return this._div;
+	};
+
+	info.update = function (props) {
+		//console.log(props)
+		if (props != null) {
+		//this._div.innerHTML = props[property_to_display] + ' median percent change in rent';
+		if (document.getElementById("dataSetOption").value == "rent") {
+			if (props[property_to_display] == 0) {
+				this._div.innerHTML = "Unreliable Data";
+		} else {
+				//this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + '% change in inflation-adjusted median rent (2000-2015)';
+				this._div.innerHTML = Math.round(props[property_to_display] * 100) / 100 + "% change in Median Rent (2000-2015, Inflation-Adjusted $, % Change)"
+				//props[property_to_display].toString().split(".")[0]
+		}
+		} else {
+			if (props[property_to_display] == -8888 || props[property_to_display] == 0) {
+				this._div.innerHTML = "Unreliable Data";
+			} else {
+				if (Math.round(props[property_to_display] * 100) >= 0) {
+					this._div.innerHTML = "+" + createInfo(props[property_to_display]);
+				} else {
+					this._div.innerHTML = createInfo(props[property_to_display]);
+				}
+
+		}
+		}
+	}
+	};
+
+	info.addTo(map);
+
+	// =============================================
+	// SHOWS DESCRIPTION OF DATASET BEFORE CLICKING ON A COUNTY
+	// =============================================
+	//var desc = L.control({ position: "bottomright" });
+	var desc = L.control({position: 'topleft'});
+	desc.onAdd = function(map) {
+		this._div = L.DomUtil.create("div", "desc");
+		this.update();
+		return this._div;
+	};
+	desc.update = function() {
+		this._div.innerHTML =
+			//"<h4># of people that were moved from SF</h4>" +
+			"<p><b>Description of the Dataset</b>" + "<br> <br>" +
+			`These maps illustrate changes in median rent (inflation-adjusted) and
+			demographics between 2000 and 2015 for San Francisco, Alameda, and Contra Costa counties.
+			Start by selecting either the Rent or Demographics map below.
+			The Demographic Change Map allows you to filter by the race and income group
+			of interest. This data comes from the U.S. Census (2000) and American Community Survey (2011-2015).
+
+
+			<br> <br>`
+			+
+			 "<button onclick='closeDesc()'>Close</button> <br>";
+	};
+	desc.addTo(map);
+	function closeDesc() {
+			map.removeControl(desc);
+	}
+	function showDesc() {
+		desc.addTo(map);
+	}
+
+	// =====================
+	// Add selection
+	// =====================
+
+
+	var filter = L.control({position: 'bottomleft'});
+	filter.onAdd = function(map) {
+	  this._div = L.DomUtil.create("div", "filter");
+	  this.onNewCounty();
+	  return this._div;
+	};
+	filter.onNewCounty = function(props) {
+	  this._div.innerHTML =
+	`
+	<p style="color: #555; font-size:13px; padding: 0; margin: 0; width:200px;"> <b>Select a Map</b> </p>
+	<select id="dataSetOption" onchange="updateDataset()">
+	<option value='rent'>Change in Median Rent</option>
+	<option value='demographics'>Demographic Change</option>
+	</select>
+	<br>
+	<button onclick='showDesc()'>Info</button>
+	`
+	//<option value='li'>Low [50%-80% AMI]</option>
+	};
+	filter.addTo(map);
+
+	// get color depending on population density value
+	//
+	function getColor(d) {
+
+		if (document.getElementById("dataSetOption") == null || document.getElementById("dataSetOption").value == "rent") {
+			grades = [-30, -15, -5, 5, 15, 30, 50];
+			return d == 0 ? "#EDEBEB" :
+					d > grades[6]  ? '#7d021d' :
+					d > grades[5]  ? '#D7191D' :
+					d > grades[4]  ? '#FDAE61' :
+					d > grades[3]   ? '#FECC5C' :
+					d > grades[2]   ? '#F7F2D1' :
+					d > grades[1]   ? '#ABD9E9' :
+					d > grades[0]   ? '#2C7BB6' :
+								'#2C548B';
+		} else if (document.getElementById("dataSetOption").value == "demographics") {
+			var grades = [-100, -50, 0, 50, 100];
+		return d == -8888 ? "#EDEBEB" :
+				d == 0 ? "#EDEBEB" :
+				d > grades[4]  ? '#3E9000' :
+				d > grades[3]   ? '#8DB22A' :
+				d > grades[2]   ? '#D2E596' :
+				d > grades[1]   ? '#E7D4E8' :
+				d > grades[0]   ? '#AF8DC3' :
+							'#762A83';
+			}
+	}
+	/*
+	3E9000	Increase > 100
+	8DB22A	Increase 50 - 100
+	D2E596	Increase < 50
+	E7D4E8	Decrease < 50
+	AF8DC3	Decrease 50 - 100
+	762A83	Decrease > 100
+	*/
+
+	function style(feature) {
+		return {
+			weight: 1,
+			opacity: 1,
+			color: 'white',
+			dashArray: '0',
+			fillOpacity: 0.7,
+			fillColor: getColor(feature["properties"][property_to_display])
+		};
+	}
+
+	function highlightFeature(e) {
+		var layer = e.target;
+
+		layer.setStyle({
+			weight: 5,
+			color: '#666',
+			dashArray: '',
+			fillOpacity: 0.7
+		});
+
+		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+			layer.bringToFront();
+		}
+
+		info.update(layer.feature.properties);
+	}
+
+	var geojson;
+
+	function resetHighlight(e) {
+		geojson.resetStyle(e.target);
+		info.update();
+	}
+
+	function zoomToFeature(e) {
+		map.fitBounds(e.target.getBounds());
+	}
+
+	function onEachFeature(feature, layer) {
+		layer.on({
+			mouseover: highlightFeature,
+			mouseout: resetHighlight,
+			click: zoomToFeature
+		});
+	}
+
+	var legend = L.control({position: 'bottomright'});
+
+	legend.onAdd = function (map) {
+		var legend_str = "";
+		var div = L.DomUtil.create('div', 'info legend'),
+			grades = grades,
+			labels = [],
+			from, to;
+		if (document.getElementById("dataSetOption").value == "rent") {
+			grades = [-30, -15, -5, 5, 15, 30];
+			//legend_str = "Change in Inflation-Adjusted Median Rent, 2000-2015 % Change)";
+			legend_str = "Change in Median Rent (2000-2015, Inflation-Adjusted $, % Change)";
+			labels.push('<i style="background:' + getColor(0) + '"></i> ' + "Unreliable Data");
+			labels.push('<i style="background:' + getColor(-30 - 1) + '"></i> ' + "Decrease >30% ");
+			labels.push('<i style="background:' + getColor(-15 - 1) + '"></i> ' + "Decrease 15 - 30% ");
+			labels.push('<i style="background:' + getColor(-5 - 1) + '"></i> ' + "Decrease 5 - 15% ");
+			labels.push('<i style="background:' + getColor(-5 + 1) + '"></i> ' + "Minimal Change (+/- 5%)");
+			labels.push('<i style="background:' + getColor(5 + 1) + '"></i> ' + "Increase 5 - 15% ");
+			labels.push('<i style="background:' + getColor(15 + 1) + '"></i> ' + "Increase 15 - 30%");
+			labels.push('<i style="background:' + getColor(30 + 1) + '"></i> ' + "Increase 30 - 50%");
+			labels.push('<i style="background:' + getColor(50 + 1) + '"></i> ' + "Increase >50%");
+
+		} else {
+			grades = [-30, -15, -5, -5, 5, 15, 30];
+			legend_str = "Change in Number of Households (count)";
+			labels.push('<i style="background:' + getColor(-8888) + '"></i> ' + "Unreliable Data");
+			labels.push('<i style="background:' + getColor(-100 - 1) + '"></i> ' + "Decrease > 100");
+			labels.push('<i style="background:' + getColor(-50 - 1) + '"></i> ' + "Decrease 50 - 100");
+			labels.push('<i style="background:' + getColor(0- 1) + '"></i> ' + "Decrease < 50");
+			labels.push('<i style="background:' + getColor(0+ 1) + '"></i> ' + "Increase < 50");
+			labels.push('<i style="background:' + getColor(50 + 1) + '"></i> ' + "Increase 50 - 100");
+			labels.push('<i style="background:' + getColor(100 + 1) + '"></i> ' + "Increase > 100");
+		}
+		/*
+		3E9000	Increase > 100
+		8DB22A	Increase 50 - 100
+		D2E596	Increase < 50
+		E7D4E8	Decrease < 50
+		AF8DC3	Decrease 50 - 100
+		762A83	Decrease > 100
+		*/
+		labels = labels.reverse();
+		//div.innerHTML = labels.join('<br>');
+		div.innerHTML = "<p style='font-size:13px; padding: 0; margin: 0; width:200px;'> <b>"+ legend_str +"</b> </p> " + labels.join('<br>');;
+		return div;
+	};
+
+	legend.addTo(map);
+
+
+
+function updateDataset() {
+  if (document.getElementById("dataSetOption").value == "rent") {
+    dataset = rentData;
+    map.removeControl(editDiversity);
+		map.removeLayer(geojson);
+		map.removeControl(legend);
+		//map.removeControl(info);
+		property_to_display = "mdpctchng";
+		geojson = L.geoJson(rentData, {
+			style: style,
+			onEachFeature: onEachFeature
+		}).addTo(map);
+		info.addTo(map);
+		legend.addTo(map);
+
+  } else if (document.getElementById("dataSetOption").value == "demographics") {
+		if(editDiversity._map == null) {
+    	editDiversity.addTo(map);
+		}
+		/*
+		map.removeControl(filter);
+		filter.addTo(map);*/
+    dataset = demoData;
+		map.removeLayer(geojson);
+		map.removeControl(legend);
+		//map.removeControl(info);
+		property_to_display = document.getElementById("income").value + "_" + document.getElementById("race").value;
+		geojson = L.geoJson(demoData, {
+			style: style,
+			onEachFeature: onEachFeature
+		}).addTo(map);
+		//info.addTo(map);
+		legend.addTo(map);
+  }
+}
+
+function drawDataset() {
+
+}
+
+
+var editDiversity = L.control({position: 'bottomleft'}); //topleft
+editDiversity.onAdd = function(map) {
+  this._div = L.DomUtil.create("div", "filter");
+  this.onNewCounty();
+  return this._div;
+};
+editDiversity.onNewCounty = function(props) {
+	//sian-Pacific Islander
+  this._div.innerHTML =
+  `
+	<p style="color: #555; font-size:13px; padding: 0; margin: 0; width:200px;"> <b>Select a demographic:</b> </p>
+  <select id="race" onchange="updateDataset()">
+  <option value='all'>All</option>
+  <option value='asn'>Asian</option>
+  <option value='blk'>Black</option>
+  <option value='hsp'>Latinx</option>
+  <option value='poc'>All People of Color</option>
+  <option value='wht'>White</option>
+  </select>
+  <br>
+  <select id="income" onchange="updateDataset()">
+  <option value='all'>All</option>
+  <option value='h'>High [>120% AMI]</option>
+  <option value='m'>Middle [80%-120% AMI]</option>
+  <option value='lw'>Low [<80% AMI]</option>
+
+  <option value='vl'>Very Low [<50% AMI]</option>
+  <option value='el'>Extremely Low [<30% AMI]</option>
+  </select>
+  <br>
+  `
+};
+
+</script>
+</body>
+</html>
