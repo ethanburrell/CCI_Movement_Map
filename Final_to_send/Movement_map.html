@@ -104,7 +104,8 @@ margin: 0;
       county_current = county_name;
       //if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
         infoSentece = createInfoSentence(document.getElementById("income").value, document.getElementById("race").value, county_name);
-        return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
+        //return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
+        return county_abbr[county_name] + "_" + document.getElementById("race").value + "_" + document.getElementById("income").value
       //}
     //}
     }
@@ -365,22 +366,22 @@ margin: 0;
   <b> 	<p style="color: #555; font-size:13px; padding: 0; margin: 0; width:200px;"> <b>Select a demographic:</b> </p>
 
   <select id="race" onchange="updateDataset()">
-  <option value='z'>All</option>
+  <option value='all'>All</option>
   <option value='api'>Asian-Pacific Islander</option>
-  <option value='blk'>Black</option>
-  <option value='hsp'>Latinx</option>
+  <option value='bk'>Black</option>
+  <option value='lat'>Latinx</option>
   <option value='poc'>All People of Color</option>
   <option value='wht'>White</option>
   </select>
   <br>
   <select id="income" onchange="updateDataset()">
-  <option value='z'>All</option>
-  <option value='h'>High [>120% AMI]</option>
-  <option value='m'>Middle [80%-120% AMI]</option>
-  <option value='lw'>Low [<80% AMI]</option>
+  <option value='all'>All</option>
+  <option value='hi'>High [>120% AMI]</option>
+  <option value='mi'>Middle [80%-120% AMI]</option>
+  <option value='low'>Low [<80% AMI]</option>
 
   <option value='vl'>Very Low [<50% AMI]</option>
-  <option value='el'>Extremely Low [<30% AMI]</option>
+  <option value='eli'>Extremely Low [<30% AMI]</option>
   </select>
   <br>
   <button onclick='showDesc()'>Info</button>
@@ -390,7 +391,7 @@ margin: 0;
     filter.addTo(map);
 
 
-    // get color depending on population density value
+    // Color buckets based on the selected value
     function getColor(d) {
       var grades = [0, 200, 400, 600, 800, 1000, 1200, 1600];
       //5a001b

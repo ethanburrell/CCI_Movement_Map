@@ -57,7 +57,7 @@
 
 	var map = L.map("map").setView([37.8735, -122.4566], 8);
 	var dataset = "rent";
-	var property_to_display = "mdpctchng";
+	var property_to_display = "medrent_pc";
 	geojson = L.geoJson(rentData, {
 		style: style,
 		onEachFeature: onEachFeature
@@ -93,7 +93,7 @@ function createInfo(change) {
 			"blk": "Black",
 			"asn": "Asian-Pacific Islander",
 			"poc": "People Of Color",
-			"all": "All"
+			"z": "All"
 	}
 	var i = property_to_display.split("_")[0]; // RACE
 	var j = property_to_display.split("_")[1]; //INCOME
@@ -350,7 +350,7 @@ function updateDataset() {
 		map.removeLayer(geojson);
 		map.removeControl(legend);
 		//map.removeControl(info);
-		property_to_display = "mdpctchng";
+		property_to_display = "medrent_pc";
 		geojson = L.geoJson(rentData, {
 			style: style,
 			onEachFeature: onEachFeature
@@ -396,7 +396,7 @@ editDiversity.onNewCounty = function(props) {
   `
 	<p style="color: #555; font-size:13px; padding: 0; margin: 0; width:200px;"> <b>Select a demographic:</b> </p>
   <select id="race" onchange="updateDataset()">
-  <option value='all'>All</option>
+  <option value='z'>All</option>
   <option value='asn'>Asian</option>
   <option value='blk'>Black</option>
   <option value='hsp'>Latinx</option>
@@ -405,7 +405,7 @@ editDiversity.onNewCounty = function(props) {
   </select>
   <br>
   <select id="income" onchange="updateDataset()">
-  <option value='all'>All</option>
+  <option value='z'>All</option>
   <option value='h'>High [>120% AMI]</option>
   <option value='m'>Middle [80%-120% AMI]</option>
   <option value='lw'>Low [<80% AMI]</option>
