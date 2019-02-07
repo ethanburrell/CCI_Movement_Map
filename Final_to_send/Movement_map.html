@@ -360,10 +360,18 @@ margin: 0;
     // location on the map or geoJson will not work with it.
     stateDistribution.click = function(props) {
       console.log(pumaData["features"][75]["properties"][props]);
+      if (pumaData["features"][75]["properties"][props] != -9999 || pumaData["features"][74]["properties"][props] != -9999) {
       this._div.innerHTML =
         "<b>" + "# People from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
         "Out of Region: " + numberWithCommas(pumaData["features"][75]["properties"][props]) + "<br>" +
       "Out of State: " + numberWithCommas(pumaData["features"][74]["properties"][props]);
+    } else {
+      this._div.innerHTML =
+      "<b>" + "# People from " + toTitleCase(county_current) + " County who moved:<br> </b>" +
+      "Out of Region: Undefined" + "<br>" +
+    "Out of State: Undefined";
+
+    }
     };
 
     // ADD PART TO MAP THAT ALLOWS USER TO FILTER THE INFORMATION
