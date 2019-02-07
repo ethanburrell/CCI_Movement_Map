@@ -279,9 +279,9 @@ margin: 0;
     // It is primarily in charge for assembling the sentence (created in functions above)
     // and displaying them in the control.
     info.update = function(props) {
-      if (selectedLayer && infoSentece) {
+      if (selectedLayer && infoSentece && typeof props !== 'undefined') {
         //console.log("a " + dataset_forcolor + " : " + props[dataset_forcolor]);
-        if (typeof props !== 'undefined') {//  && props[dataset_forcolor] === "") {
+        if (props[dataset_forcolor] == -9999) { //typeof props[dataset_forcolor] === 'undefined') {//  && props[dataset_forcolor] === "") {
           console.log(dataset_forcolor + " : " + props[dataset_forcolor]);
           this._div.innerHTML =
             "<b>" + infoSentece + "</b>" + "<br>" +
@@ -409,7 +409,7 @@ margin: 0;
 
     // Color buckets based on the selected value
     function getColor(d) {
-      if (d === "") {
+      if (d == -9999) {
         return "#EDEBEB";
       }
       var grades = [0, 200, 400, 600, 800, 1000, 1200, 1600];
