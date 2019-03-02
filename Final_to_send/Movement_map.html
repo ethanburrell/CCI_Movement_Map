@@ -102,7 +102,8 @@ margin: 0;
       //if (selectedLayer == null) {
       county_name = county_name.toLowerCase();
       county_current = county_name;
-      //if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all") {
+      //if (document.getElementById("income").value != "all" && document.getElementById("race").value != "all")
+        console.log(document.getElementById("income").value + " " + document.getElementById("race").value)
         infoSentece = createInfoSentence(document.getElementById("income").value, document.getElementById("race").value, county_name);
         //return county_abbr[county_name] + "_" + document.getElementById("income").value + "_" + document.getElementById("race").value
         return county_abbr[county_name] + "_" + document.getElementById("race").value + "_" + document.getElementById("income").value
@@ -173,12 +174,12 @@ margin: 0;
     function createInfoSentence(income, race, county) {
     county = toTitleCase(county);
     var income_abbr = {
-        "el": "Extremely Low", //[<30% AMI]
+        "eli": "Extremely Low", //[<30% AMI]
         "vl": "Very Low", //[<50% AMI]
-        "li": "Low", //[50%-80% AMI]
+        "low": "Low", //[50%-80% AMI]
         "lw": "Low", // [<80% AMI]
-        "m": "Middle", //[80%-120% AMI]
-        "h": "High", //[>120% AMI]
+        "mi": "Middle", //[80%-120% AMI]
+        "hi": "High", //[>120% AMI]
         "z": "All",
         "all": "All"
     }
@@ -186,8 +187,8 @@ margin: 0;
     income = income_abbr[income];
     var race_abbr = {
         "wht": "White",
-        "hsp": "Latinx",
-        "blk": "Black",
+        "lat": "Latinx",
+        "bk": "Black",
         "api": "Asian-Pacific Islander",
         "poc": "People Of Color",
         "z": "All",
@@ -195,7 +196,7 @@ margin: 0;
     }
     r = race;
     race = race_abbr[race]
-      if (i == "all" && r == "all") {
+      if (i == "All" && r == "All") {
           return "All people who moved from " + county + " County to:";
       } else if (i == "z") {
           return "All "+ race +" who moved from " + county + " County to:";
@@ -330,7 +331,7 @@ margin: 0;
         `This migration data shows people who moved in 2015. Start by clicking
         on the county of origin, then select the race and income group of interest.
         The map will show where movers from this county went (within Northern California),
-        as well as provide data on people who left the region and state. This 
+        as well as provide data on people who left the region and state. This
         data comes from the ACS 5-year Public Use Microdata Sample (PUMS) for 2015.
         The estimates in this map are rounded to the nearest hundred in recognition
         of the uncertainty in the PUMS data.`
