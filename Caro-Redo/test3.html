@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+
+    <title>Policy Map</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <link rel="shortcut icon" href="https://carto.com/favicon.ico" />
+    <style>
+      html, body, #map {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+      }
+      .filter {
+        text-align: left;
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+      }
+
+      #policy-info {
+        text-align: left;
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+      }
+
+select {
+  margin: 0px;
+  width: 100%;
+  padding: 5px 5px 5px 5px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  height: 34px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /*background: url(http://www.stackoverflow.com/favicon.ico) 96% / 15% no-repeat #eee;*/
+}
+
+
+/* CAUTION: IE hackery ahead */
+
+
+select::-ms-expand {
+    display: none; /* remove default arrow in IE 10 and 11 */
+}
+
+/* target Internet Explorer 9 to undo the custom arrow */
+@media screen and (min-width:0\0) {
+    select {
+        background:none\9;
+        padding: 5px\9;
+    }
+}
+
+div.cartodb-layer-selector-box div.cartodb-dropdown {
+	border: none;
+	box-shadow: 0 1px 5px rgba(0,0,0,.65);
+	z-index: 100;
+}
+
+div.cartodb-layer-selector-box div.cartodb-dropdown ul li a.layer {
+	padding: 10px;
+}
+
+div.cartodb-layer-selector-box a.layers {
+	color: #666;
+	width: 109px;
+	height: 18px;
+}
+
+div.cartodb-layer-selector-box a.layers .count {
+	background-color: #999;
+}
+
+div.cartodb-layer-selector-box a.layers:hover, #map .back-to-selector-button:hover  {
+	color: #666 !important;
+	background-color: #f4f4f4;
+	display: block;
+    border-radius: 4px;
+}
+
+div.cartodb-layer-selector-box a.layers:hover {
+	height: 18px;
+}
+
+div.cartodb-layer-selector-box a.layers .count {
+	background-color: #999 !important;
+}
+
+div.cartodb-layer-selector-box div.cartodb-dropdown ul li {
+	border-bottom: none;
+}
+
+div.cartodb-layer-selector-box div.cartodb-dropdown ul li:nth-child(3) {
+    border-top: 1px solid #ccc
+}
+
+div.cartodb-legend {
+	border: none !important;
+	box-shadow: 0 1px 5px rgba(0,0,0,.65) !important;
+	padding: 0px 15px !important;
+}
+    </style>
+
+
+    <link rel="stylesheet" href="https://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+  </head>
+  <style>
+  #policy_inventory_v1 {
+     polygon-opacity: 0.7;
+     line-color: #ffffff;
+     line-width: 1;
+     line-opacity: 1;
+  }
+
+  #policy_inventory_v1[firstsourc=0] {
+     polygon-fill: #ffcc00;
+  }
+  #policy_inventory_v1[firstsourc=1] {
+     polygon-fill: #2e5387;
+  }
+  </style>
+  <body>
+    <div class="cartodb-legend"></div>
+    <div id="map">
+      <div class="cartodb-legend color">
+  <ul class="legend-list">
+    <div id="gentrification-legend" class="legend-section">
+      <div class="first_source_hiring-title">First Source Hiring</div>
+
+        <li><div class="bullet" style="background-color: #ffcc00;"></div> YES</li>
+        <li><div class="bullet" style="background-color: #2e5387;"></div> YES</li>
+    </div>
+    <div id="Legend-categoryListItem u-flex u-alignCenter" class="legend-section">
+      <div class="legend-title">Land Use</div>
+      <div class="first_source_hiring-title">First Source Hiring</div>
+        <li><div class="bullet" style="background-color: #ffcc00;"></div> YES</li>
+        <li><div class="bullet" style="background-color: #2e5387;"></div> YES</li>
+    </div>
+    <div id="stories-legend" class="legend-section">
+      <li><div class="bullet" style="background-color: #DDA221;"></div><em style="font-weight:400;"> Personal Narratives</em></li>
+  </ul>
+  <!--
+  <div class="legend-title">Personal Narratives</div>
+  <ul class="legend-list">
+    <li><div class="bullet" style="background-color: #9b40f4;"></div></li>
+  </ul> -->
+</div>
+
+
+
+      <!--
+      <div class="cartodb-legend color">
+                  <div class="legend-title">Watsan in Kibera</div>
+                  <ul class="legend-list">
+                      <li><div class="bullet" style="background-color: #5F4690;"></div> water tap</li>
+                      <li><div class="bullet" style="background-color: #EDAD08;"></div> water tank</li>
+                      <li><div class="bullet" style="background-color: #187750;"></div> dumping site</li>
+                  </ul>
+              </div>
+          -->
+    </div>
+
+    <!-- include cartodb.js library -->
+    <script src="https://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+    <script src="inventory.js"> </script>
+    <!-- we can noe juse use inventoryText to access the nasty array -->
+    <script>
+    var infoPanel = `
+    `;
+    </script>
+    <script>
+      var activeCityName = null;
+      var map_layer;
+      var cur_layer;
+      function main(map_url) {
+        cartodb.createVis('map', map_url, {
+          shareable: false,
+          search: false,
+          infowindow: true,
+          tooltip: true,
+          https: true,
+          loaderControl: false,
+          layer_selector: false,
+          detectRetina: true,
+          center_lat: 37.7749,
+          center_lon: -122.4194,
+          https: true,
+          cartodb_logo: false,
+          zoom: 13,
+          legends: true
+        })
+        .done(function(vis, layers) {
+          // layer 0 is the base layer, layer 1 is cartodb layer
+          // setInteraction is disabled by default
+          cur_layer = layers[1];
+          layers[1].setInteraction(true);
+          /*layers[1].on('featureOver', function(e, latlng, pos, data) {
+            cartodb.log.log(e, latlng, pos, data);
+          });*/
+
+          // you can get the native map to work with it
+          var map = vis.getNativeMap();
+          map_layer = map;
+          $('.cartodb-legend').show();
+
+          // now, perform any operations you need
+          // map.setZoom(3);
+          // map.panTo([50.5, 30.5]);
+
+//L.control.attribution({position: 'topleft', prefix: ''}).addTo(map);
+var filter = L.control({position: 'topright'});
+
+filter.onAdd = function(map) {
+  this._div = L.DomUtil.create("div", "filter");
+  this._div.innerHTML = `
+  Select Policy: <br>
+  <select id="policy" class="custom-select" onchange="updateDataset()">
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/96929dc2-ad89-4122-ad2e-bbd03ac70c71/viz.json">Mobile home rent control</option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/1edf7c2e-9d2f-4789-b54e-a9a557e1fa8b/viz.json"> Community Land Trusts </option>
+  </select>
+  Select County: <br>
+  <select id="policy" class="custom-select" onchange="updateCity()">
+    <option value="San Francisco"> San Francisco </option>
+  </select>
+  `
+  return this._div;
+};
+
+filter.addTo(map);
+
+var panel = L.control({position: 'bottomleft'});
+
+panel.onAdd = function(map) {
+  this._div = L.DomUtil.create("div", "panel");
+  this._div.innerHTML = `
+  <span id="inv0"> Choose a city from the map to see its anti-displacement policy measures</span>
+
+    <ul class="list-group" id="policy-info">
+      <li class="list-group-item"><b>County:</b>
+        &nbsp;&nbsp;<span id="inv1">-</span></li>
+      <li class="list-group-item"><b>Just cause eviction ordinance </b>
+        <a class="info" href="#justcause"></a>
+        &nbsp;&nbsp;<span id="inv2">-</span></li>
+      <li class="list-group-item"><b>Rent stabilization or rent control </b>
+        <a class="info" href="#rentstabilization"></a>
+        &nbsp;&nbsp;<span id="inv3">-</span></li>
+      <li class="list-group-item"><b>Rent review board and/or mediation </b>
+        <a class="info" href="#rentreviewboard"></a>
+        &nbsp;&nbsp;<span id="inv4">-</span></li>
+      <li class="list-group-item"><b>Mobile home rent control </b>
+        <a class="info" href="#mobilehome"></a>
+        &nbsp;&nbsp;<span id="inv5">-</span></li>
+      <li class="list-group-item"><b>SRO preservation </b>
+        <a class="info" href="#sro"></a>
+        &nbsp;&nbsp;<span id="inv6">-</span></li>
+      <li class="list-group-item"><b>Condominium conversion regulations </b>
+        <a class="info" href="#condoconversion"></a>
+        &nbsp;&nbsp;<span id="inv7">-</span></li>
+      <li class="list-group-item"><b>Foreclosure assistance </b>
+        <a class="info" href="#foreclosure"></a>
+        &nbsp;&nbsp;<span id="inv8">-</span></li>
+      <li class="list-group-item"><b>Jobs-housing linkage fee or affordable housing impact/linkage fee </b>
+        <a class="info" href="#jobshousinglinkage"></a>
+        &nbsp;&nbsp;<span id="inv9">-</span></li>
+      <li class="list-group-item"><b>Commercial linkage fee/program </b>
+        <a class="info" href="#commerciallinkage"></a>
+        &nbsp;&nbsp;<span id="inv10">-</span></li>
+      <li class="list-group-item"><b>Housing trust fund </b>
+        <a class="info" href="#housingtrustfund"></a>
+        &nbsp;&nbsp;<span id="inv11">-</span></li>
+      <li class="list-group-item"><b>Inclusionary zoning/housing (below market rate housing) </b>
+        <a class="info" href="#inclusionaryzoning"></a>
+        &nbsp;&nbsp;<span id="inv12">-</span></li>
+      <li class="list-group-item"><b>Density bonus ordinance </b>
+        <a class="info" href="#densitybonus"></a>
+        &nbsp;&nbsp;<span id="inv13">-</span></li>
+      <li class="list-group-item"><b>Community land trusts </b>
+        <a class="info" href="#communitylandtrust"></a>
+        &nbsp;&nbsp;<span id="inv14">-</span></li>
+      <li class="list-group-item"><b>First source hiring ordinances </b>
+        <a class="info" href="#firstsourcehiring"></a>
+        &nbsp;&nbsp;<span id="inv15">-</span></li>
+      <li class="list-group-item"><b>Sources:</b>
+        &nbsp;&nbsp;<span id="inv16">-</span></li>
+    </ul>`;
+    return this._div;
+
+};
+
+panel.addTo(map);
+
+        })
+        .error(function(err) {
+          console.log(err);
+        });
+      }
+
+
+      function updateDataset() {
+        //map.
+        console.log("ahasdf");
+        map_layer.removeLayer(cur_layer);
+        console.log(document.getElementById("policy").value);
+        var link = document.getElementById("policy").value;
+        //main(document.getElementById("policy").value)
+        cartodb.createLayer(map_layer, link , {legends: true})
+            .addTo(map_layer)
+            .on('done', function(layer) {
+              //do stuff
+            })
+            .on('error', function(err) {
+              alert("some error occurred: " + err);
+            });
+
+      }
+
+      function updateCity() {
+        var city = document.getElementById("city").value;
+        console.log(city)
+
+        activeCityName = city;
+      }
+
+
+      window.onload = main('https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/96929dc2-ad89-4122-ad2e-bbd03ac70c71/viz.json');
+      //window.onload = check;
+    </script>
+  </body>
+</html>

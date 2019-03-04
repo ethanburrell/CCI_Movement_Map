@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+
+    <title>Policy Map</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <link rel="shortcut icon" href="https://carto.com/favicon.ico" />
+    <style>
+      html, body, #map {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+      }
+      .filter {
+        text-align: left;
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+      }
+
+      .panel {
+        text-align: left;
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255, 255, 255, 0.8);
+        /*box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);*/
+        border-radius: 5px;
+        width: 400px;
+      }
+
+      select {
+        margin: 0px;
+        width: 100%;
+        padding: 5px 5px 5px 5px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        height: 34px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        /*background: url(http://www.stackoverflow.com/favicon.ico) 96% / 15% no-repeat #eee;*/
+      }
+
+
+      /* CAUTION: IE hackery ahead */
+
+
+      select::-ms-expand {
+          display: none; /* remove default arrow in IE 10 and 11 */
+      }
+
+      /* target Internet Explorer 9 to undo the custom arrow */
+      @media screen and (min-width:0\0) {
+          select {
+              background:none\9;
+              padding: 5px\9;
+          }
+      }
+    </style>
+
+
+    <link rel="stylesheet" href="https://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+  </head>
+  <style>
+  #policy_inventory_v1 {
+     polygon-opacity: 0.7;
+     line-color: #ffffff;
+     line-width: 1;
+     line-opacity: 1;
+  }
+
+  #policy_inventory_v1[firstsourc=0] {
+     polygon-fill: #ffcc00;
+  }
+  #policy_inventory_v1[firstsourc=1] {
+     polygon-fill: #2e5387;
+  }
+  </style>
+
+  <body>
+<script>
+var policy_to_legend = {
+  "Mobile home rent control": "mobile_home-legend",
+  "Community Land Trusts": "land_trusts-legend"
+}
+</script>
+<div class="cartodb-legend"></div>
+<div id="map">
+  <div class="cartodb-legend color">
+<ul class="legend-list" id="legend">
+  <div id="mobile_home-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Mobile home rent control</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="land_trusts-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Community Land Trusts</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+</ul>
+</div>
+</div>
+
+    <!-- include cartodb.js library -->
+    <script src="https://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+    <script src="inventory.js"> </script>
+    <!-- we can noe juse use inventoryText to access the nasty array -->
+    <script>
+    var infoPanel = `
+    `;
+    </script>
+    <script>
+      var activeCityName = null;
+      var map_layer;
+      var cur_layer;
+      function main(map_url) {
+        cartodb.createVis('map', map_url, {
+          shareable: false,
+          search: false,
+          infowindow: true,
+          tooltip: true,
+          https: true,
+          loaderControl: false,
+          layer_selector: false,
+          detectRetina: true,
+          center_lat: 37.7749,
+          center_lon: -122.4194,
+          https: true,
+          cartodb_logo: false,
+          zoom: 13,
+          legends: true
+        })
+        .done(function(vis, layers) {
+          // layer 0 is the base layer, layer 1 is cartodb layer
+          // setInteraction is disabled by default
+          cur_layer = layers[1];
+          layers[1].setInteraction(true);
+          /*layers[1].on('featureOver', function(e, latlng, pos, data) {
+            cartodb.log.log(e, latlng, pos, data);
+          });*/
+
+          // you can get the native map to work with it
+          var map = vis.getNativeMap();
+          map_layer = map;
+
+          // now, perform any operations you need
+          // map.setZoom(3);
+          // map.panTo([50.5, 30.5]);
+
+//L.control.attribution({position: 'topleft', prefix: ''}).addTo(map);
+var filter = L.control({position: 'topright'});
+
+filter.onAdd = function(map) {
+  this._div = L.DomUtil.create("div", "filter");
+  this._div.innerHTML = `
+  Select Policy: <br>
+  <select id="policy" class="custom-select" onchange="updateDataset()">
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/96929dc2-ad89-4122-ad2e-bbd03ac70c71/viz.json">Mobile home rent control</option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/1edf7c2e-9d2f-4789-b54e-a9a557e1fa8b/viz.json"> Community Land Trusts </option>
+  </select>
+  Select County: <br>
+  <select id="city" class="custom-select" onchange="updateCity()">
+    <option value="Berkeley"> Berkeley </option>
+    <option value="San Francisco"> San Francisco </option>
+    <option value="San Jose"> San Jose </option>
+    <option value="Alameda"> Alameda </option>
+  </select>
+  `
+  return this._div;
+};
+
+filter.addTo(map);
+selectLegend();
+
+
+
+var panel = L.control({position: 'bottomleft'});
+
+panel.onAdd = function(map) {
+  this._div = L.DomUtil.create("div", "panel");
+  this._div.innerHTML = `
+    <div><a id="close">&times;</a></div>
+      <span id="inv0" > Choose a city from the map to see its anti-displacement policy measures</span>
+    <ul class="list-group" id="inventoryPanel">
+      <li class="list-group-item"><b>County:</b>
+        &nbsp;&nbsp;<span id="inv1">-</span></li>
+      <li class="list-group-item"><b>Just cause eviction ordinance </b>
+        <a class="info" href="#justcause"></a>
+        &nbsp;&nbsp;<span id="inv2">-</span></li>
+      <li class="list-group-item"><b>Rent stabilization or rent control </b>
+        <a class="info" href="#rentstabilization"></a>
+        &nbsp;&nbsp;<span id="inv3">-</span></li>
+      <li class="list-group-item"><b>Rent review board and/or mediation </b>
+        <a class="info" href="#rentreviewboard"></a>
+        &nbsp;&nbsp;<span id="inv4">-</span></li>
+      <li class="list-group-item"><b>Mobile home rent control </b>
+        <a class="info" href="#mobilehome"></a>
+        &nbsp;&nbsp;<span id="inv5">-</span></li>
+      <li class="list-group-item"><b>SRO preservation </b>
+        <a class="info" href="#sro"></a>
+        &nbsp;&nbsp;<span id="inv6">-</span></li>
+      <li class="list-group-item"><b>Condominium conversion regulations </b>
+        <a class="info" href="#condoconversion"></a>
+        &nbsp;&nbsp;<span id="inv7">-</span></li>
+      <li class="list-group-item"><b>Foreclosure assistance </b>
+        <a class="info" href="#foreclosure"></a>
+        &nbsp;&nbsp;<span id="inv8">-</span></li>
+      <li class="list-group-item"><b>Jobs-housing linkage fee or affordable housing impact/linkage fee </b>
+        <a class="info" href="#jobshousinglinkage"></a>
+        &nbsp;&nbsp;<span id="inv9">-</span></li>
+      <li class="list-group-item"><b>Commercial linkage fee/program </b>
+        <a class="info" href="#commerciallinkage"></a>
+        &nbsp;&nbsp;<span id="inv10">-</span></li>
+      <li class="list-group-item"><b>Housing trust fund </b>
+        <a class="info" href="#housingtrustfund"></a>
+        &nbsp;&nbsp;<span id="inv11">-</span></li>
+      <li class="list-group-item"><b>Inclusionary zoning/housing (below market rate housing) </b>
+        <a class="info" href="#inclusionaryzoning"></a>
+        &nbsp;&nbsp;<span id="inv12">-</span></li>
+      <li class="list-group-item"><b>Density bonus ordinance </b>
+        <a class="info" href="#densitybonus"></a>
+        &nbsp;&nbsp;<span id="inv13">-</span></li>
+      <li class="list-group-item"><b>Community land trusts </b>
+        <a class="info" href="#communitylandtrust"></a>
+        &nbsp;&nbsp;<span id="inv14">-</span></li>
+      <li class="list-group-item"><b>First source hiring ordinances </b>
+        <a class="info" href="#firstsourcehiring"></a>
+        &nbsp;&nbsp;<span id="inv15">-</span></li>
+      <li class="list-group-item"><b>Sources:</b>
+        &nbsp;&nbsp;<span id="inv16">-</span></li>
+    </ul>`;
+    return this._div;
+
+};
+
+panel.addTo(map);
+fillInventoryBox();
+
+        })
+        .error(function(err) {
+          console.log(err);
+        });
+      }
+
+
+      function updateDataset() {
+        //map.
+        console.log("ahasdf");
+        map_layer.removeLayer(cur_layer);
+        console.log(document.getElementById("policy").value);
+        var link = document.getElementById("policy").value;
+        selectLegend();
+
+        //main(document.getElementById("policy").value)
+        cartodb.createLayer(map_layer, link , {legends: true})
+            .addTo(map_layer)
+            .on('done', function(layer) {
+              //do stuff
+            })
+            .on('error', function(err) {
+              alert("some error occurred: " + err);
+            });
+
+      }
+
+      function updateCity() {
+        var city = document.getElementById("city").value;
+        console.log(city)
+        activeCityName = city;
+        fillInventoryBox();
+        zoomToCity();
+      }
+
+      function selectLegend() {
+        var policy = document.getElementById("policy");
+        var text = policy.options[policy.selectedIndex].text;
+
+        var legend = document.getElementById("legend");
+        var items = legend.getElementsByTagName("div");
+        for (var  i = 0; i < items.length; i++) {
+          items[i].style.display = "none";
+        }
+        var element_id = policy_to_legend[text];
+        console.log(element_id);
+        document.getElementById(element_id).style.display = "block";
+      }
+
+      function findCityArrayIndex(city) {
+        index = 0;
+        for (var  i = 0; i < inventoryText.length; i++) {
+          if (inventoryText[i][1] === city) {
+            index = i;
+            break;
+          }
+        }
+        return index;
+      }
+
+      function fillInventoryBox() {
+        var city = document.getElementById("city");
+        city = city.options[city.selectedIndex].text
+        var index = findCityArrayIndex(city)
+        var cityInventoryArray = inventoryText[index];
+
+        var panelUL = document.getElementById("inventoryPanel");
+        console.log(panelUL)
+        var items = panelUL.getElementsByTagName("li");
+        var labels = ["County", "Just cause eviction ordinance", "Rent stabilization or rent control", "Rent review board and/or mediation",
+            "Mobile home rent control", "SRO preservation", "Condominium conversion regulations", "Foreclosure assistance", "Jobs-housing linkage fee or affordable housing impact/linkage fee",
+            "Commercial linkage fee/program", "Housing trust fund", "Inclusionary zoning/housing (below market rate housing)", "Density bonus ordinance",
+            "Community land trusts", "First source hiring ordinances", "Sources"];
+        for (var i = 0; i < labels.length; i++) {
+          items[i].innerHTML = "<b>" + labels[i] + "</b>"+ ": " + cityInventoryArray[i + 1];
+          //`<li class="list-group-item"><b>Inclusionary zoning/housing (below market rate housing) </b>
+          //  <a class="info" href="#inclusionaryzoning"></a> &nbsp;&nbsp;<span id="inv12">asdf</span></li>`;
+
+        }
+        console.log("asdf")
+
+      }
+
+      function padBounds(bounds, pad) {
+      	// increase bounds proportionally by pad value in all directions
+      	var sw_lat = bounds[0][0];
+      	var sw_lon = bounds[0][1];
+      	var ne_lat = bounds[1][0];
+      	var ne_lon = bounds[1][1];
+      	var lat = (ne_lat - sw_lat) * pad;
+      	var lon = (ne_lon - sw_lon) * pad;
+      	// shift the center to the right to avoid being blocked by policy window
+      	return [[sw_lat - lat, sw_lon - lon*0.5], [ne_lat + lat, ne_lon + lon*1.5]];
+      }
+
+      function zoomToCity() {
+        var cityCoords = {
+          "San Francisco": [37.7749, -122.4194, 13],
+          "Alameda": [37.7652, -122.2416, 13],
+          "San Jose": [37.3382, -121.8863, 13]
+        }
+        var coords = cityCoords[document.getElementById("city").value]
+        var lat = coords[0]
+        var long = coords[1]
+        var zoom = coords[2]
+        var lat_diff = (map_layer.getBounds()["_northEast"]["lat"] - map_layer.getBounds()["_southWest"]["lat"]) / 2
+        var long_diff = (map_layer.getBounds()["_northEast"]["lng"] - map_layer.getBounds()["_southWest"]["lng"]) / 2
+        console.log
+        map_layer.fitBounds([[lat - lat_diff, long - long_diff], [lat + lat_diff, long + long_diff]])
+
+      }
+
+    $('#close').click(function() {
+console.log("asdfkjasdf")    });
+
+
+
+
+
+      window.onload = main('https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/96929dc2-ad89-4122-ad2e-bbd03ac70c71/viz.json');
+      //window.onload = check;
+    </script>
+  </body>
+</html>
