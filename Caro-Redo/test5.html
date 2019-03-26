@@ -7,6 +7,9 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <link rel="shortcut icon" href="https://carto.com/favicon.ico" />
+    <!-- <link rel="stylesheet" href="https://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" /> -->
+
+<link rel="stylesheet" href="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.15/themes/css/cartodb.css"/>
     <style>
       html, body, #map {
         height: 100%;
@@ -23,16 +26,16 @@
         border-radius: 5px;
       }
 
-      .panel {
+      /*.panel {
         text-align: left;
         padding: 6px 8px;
         font: 14px/16px Arial, Helvetica, sans-serif;
         background: white;
         background: rgba(255, 255, 255, 0.8);
-        /*box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);*/
+
         border-radius: 5px;
-        width: 400px;
-      }
+        width: 480px;
+      }*/
 
       select {
         margin: 0px;
@@ -62,10 +65,8 @@
               padding: 5px\9;
           }
       }
+
     </style>
-
-
-    <link rel="stylesheet" href="https://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
   </head>
   <style>
   #policy_inventory_v1 {
@@ -81,18 +82,42 @@
   #policy_inventory_v1[firstsourc=1] {
      polygon-fill: #2e5387;
   }
+
+  #policy_inventory_v1{
+  polygon-fill: #ECF0F6;
+  polygon-opacity: 0.9;
+  line-color: #FFFFFF;
+  line-width: 0.5;
+  line-opacity: 1;
+}
+#policy_inventory_v1 [ total <= 12] {
+   polygon-fill: #43618F;
+}
+#policy_inventory_v1 [ total <= 8] {
+   polygon-fill: #4E71A6;
+}
+#policy_inventory_v1 [ total <= 6] {
+   polygon-fill: #6182B5;
+}
+#policy_inventory_v1 [ total <= 4] {
+   polygon-fill: #B2C2DB;
+}
+#policy_inventory_v1 [ total <= 2] {
+   polygon-fill: #ECF0F6;
+}
   </style>
 
   <body>
 <script>
 var policy_to_legend = {
   "Mobile home rent control": "mobile_home-legend",
-  "Community Land Trusts": "land_trusts-legend"
+  "Community Land Trusts": "land_trusts-legend",
+  "Total": "total-legend"
 }
 </script>
-<div class="cartodb-legend"></div>
 <div id="map">
-  <div class="cartodb-legend color">
+  <div class="cartodb-legend color choropleth">
+
 <ul class="legend-list" id="legend">
   <div id="mobile_home-legend" class="legend-section" style="display: none">
     <span class="legend-title">Mobile home rent control</span>
@@ -104,15 +129,38 @@ var policy_to_legend = {
       <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
       <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
   </div>
+  <div id="total-legend" class="legend-section" style="display: none">
+      <div class="legend-title">Total Number of Policies</div>
+      <ul>
+      	<li class="min">
+      		2
+      	</li>
+      	<li class="max">
+      		13
+      	</li>
+      	<li class="graph count_315">
+      	<div class="colors">
+      	<div class="quartile" style="background-color:#ecf0f6"></div>
+      	<div class="quartile" style="background-color:#b2c2db"></div>
+      	<div class="quartile" style="background-color:#6182b5"></div>
+      	<div class="quartile" style="background-color:#4e71a6"></div>
+      	<div class="quartile" style="background-color:#43618f"></div>
+      	</div>
+      	</li>
+      </ul>
+  </div>
 </ul>
 </div>
 </div>
+
+
 
     <!-- include cartodb.js library -->
     <script src="https://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
     <script src="inventory.js"> </script>
     <!-- we can noe juse use inventoryText to access the nasty array -->
     <script>
+    var panel;
     var infoPanel = `
     `;
     </script>
@@ -162,10 +210,11 @@ filter.onAdd = function(map) {
   this._div.innerHTML = `
   Select Policy: <br>
   <select id="policy" class="custom-select" onchange="updateDataset()">
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/36c6c861-c90b-4743-a8ce-905a047db2a2/viz.json">Total</option>
     <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/96929dc2-ad89-4122-ad2e-bbd03ac70c71/viz.json">Mobile home rent control</option>
     <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/1edf7c2e-9d2f-4789-b54e-a9a557e1fa8b/viz.json"> Community Land Trusts </option>
   </select>
-  Select County: <br>
+  Select City: <br>
   <select id="city" class="custom-select" onchange="updateCity()">
     <option value="Berkeley"> Berkeley </option>
     <option value="San Francisco"> San Francisco </option>
@@ -178,70 +227,7 @@ filter.onAdd = function(map) {
 
 filter.addTo(map);
 selectLegend();
-
-
-
-var panel = L.control({position: 'bottomleft'});
-
-panel.onAdd = function(map) {
-  this._div = L.DomUtil.create("div", "panel");
-  this._div.innerHTML = `
-    <div><a id="close">&times;</a></div>
-      <span id="inv0" > Choose a city from the map to see its anti-displacement policy measures</span>
-    <ul class="list-group" id="inventoryPanel">
-      <li class="list-group-item"><b>County:</b>
-        &nbsp;&nbsp;<span id="inv1">-</span></li>
-      <li class="list-group-item"><b>Just cause eviction ordinance </b>
-        <a class="info" href="#justcause"></a>
-        &nbsp;&nbsp;<span id="inv2">-</span></li>
-      <li class="list-group-item"><b>Rent stabilization or rent control </b>
-        <a class="info" href="#rentstabilization"></a>
-        &nbsp;&nbsp;<span id="inv3">-</span></li>
-      <li class="list-group-item"><b>Rent review board and/or mediation </b>
-        <a class="info" href="#rentreviewboard"></a>
-        &nbsp;&nbsp;<span id="inv4">-</span></li>
-      <li class="list-group-item"><b>Mobile home rent control </b>
-        <a class="info" href="#mobilehome"></a>
-        &nbsp;&nbsp;<span id="inv5">-</span></li>
-      <li class="list-group-item"><b>SRO preservation </b>
-        <a class="info" href="#sro"></a>
-        &nbsp;&nbsp;<span id="inv6">-</span></li>
-      <li class="list-group-item"><b>Condominium conversion regulations </b>
-        <a class="info" href="#condoconversion"></a>
-        &nbsp;&nbsp;<span id="inv7">-</span></li>
-      <li class="list-group-item"><b>Foreclosure assistance </b>
-        <a class="info" href="#foreclosure"></a>
-        &nbsp;&nbsp;<span id="inv8">-</span></li>
-      <li class="list-group-item"><b>Jobs-housing linkage fee or affordable housing impact/linkage fee </b>
-        <a class="info" href="#jobshousinglinkage"></a>
-        &nbsp;&nbsp;<span id="inv9">-</span></li>
-      <li class="list-group-item"><b>Commercial linkage fee/program </b>
-        <a class="info" href="#commerciallinkage"></a>
-        &nbsp;&nbsp;<span id="inv10">-</span></li>
-      <li class="list-group-item"><b>Housing trust fund </b>
-        <a class="info" href="#housingtrustfund"></a>
-        &nbsp;&nbsp;<span id="inv11">-</span></li>
-      <li class="list-group-item"><b>Inclusionary zoning/housing (below market rate housing) </b>
-        <a class="info" href="#inclusionaryzoning"></a>
-        &nbsp;&nbsp;<span id="inv12">-</span></li>
-      <li class="list-group-item"><b>Density bonus ordinance </b>
-        <a class="info" href="#densitybonus"></a>
-        &nbsp;&nbsp;<span id="inv13">-</span></li>
-      <li class="list-group-item"><b>Community land trusts </b>
-        <a class="info" href="#communitylandtrust"></a>
-        &nbsp;&nbsp;<span id="inv14">-</span></li>
-      <li class="list-group-item"><b>First source hiring ordinances </b>
-        <a class="info" href="#firstsourcehiring"></a>
-        &nbsp;&nbsp;<span id="inv15">-</span></li>
-      <li class="list-group-item"><b>Sources:</b>
-        &nbsp;&nbsp;<span id="inv16">-</span></li>
-    </ul>`;
-    return this._div;
-
-};
-
-panel.addTo(map);
-fillInventoryBox();
+addPanel(map);
 
         })
         .error(function(err) {
@@ -274,22 +260,140 @@ fillInventoryBox();
         var city = document.getElementById("city").value;
         console.log(city)
         activeCityName = city;
+        addPanel(map_layer);
         fillInventoryBox();
         zoomToCity();
+
       }
 
       function selectLegend() {
         var policy = document.getElementById("policy");
         var text = policy.options[policy.selectedIndex].text;
+        console.log("Select Legend " + text)
+        //if (text !== "Total") {
+          var legend = document.getElementById("legend");
+          //var items = legend.getElementsByTagName("div");
+          var items = legend.querySelectorAll("div.legend-section");
+          for (var  i = 0; i < items.length; i++) {
+            items[i].style.display = "none";
+          }
+          var element_id = policy_to_legend[text];
+          console.log(element_id);
+          document.getElementById(element_id).style.display = "block";
+        /*} else {
 
-        var legend = document.getElementById("legend");
-        var items = legend.getElementsByTagName("div");
-        for (var  i = 0; i < items.length; i++) {
-          items[i].style.display = "none";
-        }
-        var element_id = policy_to_legend[text];
-        console.log(element_id);
-        document.getElementById(element_id).style.display = "block";
+          var element_id = policy_to_legend[text];
+          document.getElementById(element_id).style.display = "block";
+        }*/
+      }
+
+      function addPanel(map) {
+                if (panel != null) {
+                    map.removeControl(panel);
+                }
+
+                panel = L.control({position: 'topleft'});
+                panel.onAdd = function(map) {
+                  this._div = L.DomUtil.create("div", "ls");
+                  //
+                  this._div.innerHTML = `
+                  <div id="policy-info" class="panel panel-danger">
+
+
+                  	<div class="panel-heading">
+                      <div><a onclick="closePanel()" class="close">×</a></div>
+                  		<span id="inv0"><strong>Choose a city from the map to see its anti-displacement policy measures</strong></span>
+                  	</div>
+                  	<ul class="list-group">
+
+                          <li class="list-group-item"> County
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/sf#justcause"></a>:
+                              &nbsp;&nbsp;<span id="inv1">-</span></li>
+                          <li class="list-group-item">Just cause eviction ordinance
+                              <a class="info nav-link" href="http://www.urbandisplacement.org/policy-tools/la#rentreviewboard"></a>:
+                              &nbsp;&nbsp;<span id="inv2">-</span></li>
+                          <li class="list-group-item">Rent stabilization or rent control
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#rentreviewboard"></a>:
+                              &nbsp;&nbsp;<span id="inv3">-</span></li>
+                          <li class="list-group-item">Rent review board and/or mediation
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#mobilehome"></a>:
+                              &nbsp;&nbsp;<span id="inv4">-</span></li>
+                          <li class="list-group-item">SRO (Single-Room Occupancy) Preservation
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#sro"></a>:
+                              &nbsp;&nbsp;<span id="inv5">-</span></li>
+                          <!-- <li class="list-group-item">Graduated density bonus
+                              <a class="info" href="#Grad_Density"></a>:
+                              &nbsp;&nbsp;<span id="inv6">-</span></li>
+                          <li class="list-group-item">Mixed-use zoning
+                              <a class="info" href="#MU_Zone"></a>:
+                              &nbsp;&nbsp;<span id="inv7">-</span></li> -->
+                          <li class="list-group-item">Condominium conversion regulations
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#condoconversion"></a>:
+                              &nbsp;&nbsp;<span id="inv6">-</span></li>
+                          <!-- <li class="list-group-item">Form-based code
+                              <a class="info" href="#Form_Based"></a>:
+                              &nbsp;&nbsp;<span id="inv9">-</span></li>
+                          <li class="list-group-item">Housing overlay zone
+                              <a class="info" href="#Housing_Overlay"></a>:
+                              &nbsp;&nbsp;<span id="inv10">-</span></li> -->
+
+                          <li class="list-group-item">Foreclosure assistance
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#foreclosure"></a>:
+                              &nbsp;&nbsp;<span id="inv7">-</span></li>
+                          <li class="list-group-item">Jobs-housing linkage fee or affordable housing impact/linkage fee
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#jobshousinglinkage"></a>:
+                              &nbsp;&nbsp;<span id="inv8">-</span></li>
+                          <li class="list-group-item">Commercial linkage fee/program
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#commerciallinkage"></a>:
+                              &nbsp;&nbsp;<span id="inv8">-</span></li>
+                          <!-- <li class="list-group-item">In-lieu fees (inclusionary zoning)
+                              <a class="info" href="#In_Lieu"></a>:
+                              &nbsp;&nbsp;<span id="inv13">-</span></li>
+                          <li class="list-group-item">Homeowner repair or rehabilitation
+                              <a class="info" href="#Home_Rehab"></a>:
+                              &nbsp;&nbsp;<span id="inv14">-</span></li> -->
+                          <li class="list-group-item">Housing trust fund
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#housingtrustfund"></a>:
+                              &nbsp;&nbsp;<span id="inv9">-</span></li>
+                          <li class="list-group-item">Commercial linkage fee
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#Comm_Fee"></a>:
+                              &nbsp;&nbsp;<span id="inv10">-</span></li>
+                          <!-- <li class="list-group-item">Local homebuyer assistance
+                              <a class="info" href="#Buyer_Assist"></a>:
+                              &nbsp;&nbsp;<span id="inv17">-</span></li> -->
+                          <li class="list-group-item">Housing trust fund
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#Foreclose_Assist"></a>:
+                              &nbsp;&nbsp;<span id="inv11">-</span></li>
+                          <li class="list-group-item">Inclusionary zoning/housing (below market rate housing)
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#inclusionaryzoning"></a>:
+                              &nbsp;&nbsp;<span id="inv12">-</span></li>
+                          <li class="list-group-item">Density bonus ordinance
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#densitybonus"></a>:
+                              &nbsp;&nbsp;<span id="inv13">-</span></li>
+                          <li class="list-group-item">Community land trusts
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#communitylandtrust"></a>:
+                              &nbsp;&nbsp;<span id="inv14">-</span></li>
+                          <!--<li class="list-group-item">First source hiring ordinances
+                              <a class="info" href="http://www.urbandisplacement.org/policy-tools/la#firstsourcehiring"></a>:
+                              &nbsp;&nbsp;<span id="inv14">-</span></li>-->
+                          <!--<li class="list-group-item panel-footer"><a target="_blank" id="inv15">Source Info</a></li>-->
+                      </ul>
+                  </div>`;
+
+
+
+                    return this._div;
+
+                };
+
+                  panel.addTo(map);
+                  fillInventoryBox();
+
+                  /*document.getElementById("close").addEventListener("click", function() {
+                    //alert("Hello World!");
+                    map.removeControl(panel);
+                    panel = null;
+                  });*/
       }
 
       function findCityArrayIndex(city) {
@@ -308,21 +412,32 @@ fillInventoryBox();
         city = city.options[city.selectedIndex].text
         var index = findCityArrayIndex(city)
         var cityInventoryArray = inventoryText[index];
-
-        var panelUL = document.getElementById("inventoryPanel");
+        //document.getElementById("inv0").innerHTML = activeCityName;s
+        var panelUL = document.getElementsByClassName("list-group")[0];
         console.log(panelUL)
         var items = panelUL.getElementsByTagName("li");
-        var labels = ["County", "Just cause eviction ordinance", "Rent stabilization or rent control", "Rent review board and/or mediation",
+        var labels = ["Just cause eviction ordinance", "Rent stabilization or rent control", "Rent review board and/or mediation",
             "Mobile home rent control", "SRO preservation", "Condominium conversion regulations", "Foreclosure assistance", "Jobs-housing linkage fee or affordable housing impact/linkage fee",
             "Commercial linkage fee/program", "Housing trust fund", "Inclusionary zoning/housing (below market rate housing)", "Density bonus ordinance",
             "Community land trusts", "First source hiring ordinances", "Sources"];
+        var div_ids = ["#justcause", "#rentreviewboard", "#mobilehome", "#sro", "#condoconversion",
+        "#foreclosure", "#jobshousinglinkage", "#commerciallinkage", "housingtrustfund", "#Comm_Fee",
+        "#Foreclose_Assist", "#inclusionaryzoning", "#densitybonus", "#communitylandtrust", "#sources"]
         for (var i = 0; i < labels.length; i++) {
-          items[i].innerHTML = "<b>" + labels[i] + "</b>"+ ": " + cityInventoryArray[i + 1];
+          if (labels[i] === "Sources") {
+              var links = cityInventoryArray[i + 5]
+              links = links.slice(6);
+              console.log("links " + links)
+              items[i].innerHTML = "<b>" + labels[i] + "</b>"+ ": " + '<a class="info" href="' + div_ids[i] + '"></a> <a href = "' + links + '"> Source </a>';
+          } else {
+              items[i].innerHTML = "<b>" + labels[i] + "</b>"+ ": " + '<a class="info" href="' + div_ids[i] + '"></a>'+ cityInventoryArray[i + 5];
+          }
           //`<li class="list-group-item"><b>Inclusionary zoning/housing (below market rate housing) </b>
           //  <a class="info" href="#inclusionaryzoning"></a> &nbsp;&nbsp;<span id="inv12">asdf</span></li>`;
 
         }
         console.log("asdf")
+        //console.log(cityInventoryArray)
 
       }
 
@@ -348,22 +463,250 @@ fillInventoryBox();
         var lat = coords[0]
         var long = coords[1]
         var zoom = coords[2]
-        var lat_diff = (map_layer.getBounds()["_northEast"]["lat"] - map_layer.getBounds()["_southWest"]["lat"]) / 2
-        var long_diff = (map_layer.getBounds()["_northEast"]["lng"] - map_layer.getBounds()["_southWest"]["lng"]) / 2
-        console.log
+        //var lat_diff = (map_layer.getBounds()["_northEast"]["lat"] - map_layer.getBounds()["_southWest"]["lat"]) / 2
+        //var long_diff = (map_layer.getBounds()["_northEast"]["lng"] - map_layer.getBounds()["_southWest"]["lng"]) / 2
+        var lat_diff = (37.57233793321531 - 37.14170874010794) / 2;
+        var long_diff = (-121.52664184570312 - -122.24899291992188) / 2;
+
         map_layer.fitBounds([[lat - lat_diff, long - long_diff], [lat + lat_diff, long + long_diff]])
 
       }
 
-    $('#close').click(function() {
-console.log("asdfkjasdf")    });
+      function closePanel() {
+        map_layer.removeControl(panel);
+        panel = null;
+      }
 
-
-
-
-
-      window.onload = main('https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/96929dc2-ad89-4122-ad2e-bbd03ac70c71/viz.json');
+      window.onload = main('https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/36c6c861-c90b-4743-a8ce-905a047db2a2/viz.json');
       //window.onload = check;
     </script>
+    <style>
+    .ls {
+      width: 480px;
+    }
+    #map div.cartodb-legend-stack div.cartodb-legend li.min {
+    	float: left;
+    	width: 20%;
+    	text-align: center;
+    }
+    #map div.cartodb-legend-stack div.cartodb-legend li.median {
+    	float: left;
+    	width: 60%;
+    	text-align: center;
+    }
+    #map div.cartodb-legend-stack div.cartodb-legend li.max {
+    	float: right;
+    	width: 20%;
+    	text-align: center;
+    }
+    /* don't show the popups */
+    .cartodb-popup {
+    	display: none;
+    }
+
+    #mapContainer {
+    	border-top: 1px solid #ccc;
+    	border-bottom: 1px solid #ccc;
+    	margin-left: 0;
+    	margin-right: 0;
+    	width: 100%;
+    	height: 550px;
+    	padding: 0;
+    }
+
+    /* policy info panel */
+    #policy-info {
+    	position: absolute;
+    	z-index: 1000000;
+    	top: 15px;
+    	left: 20px;
+    	width: auto;
+            max-width: 480px;
+    	background-color: white;
+    	box-shadow: rgba(0,0,0,.1) 0 0 4px 2px;
+    	font-size: 12px;
+    }
+
+
+    #policy-info a.info {
+        background: url(http://www.urbandisplacement.org/sites/default/files/images/info.gif) center right no-repeat;
+        padding-right: 16px;
+    }
+    #policy-info a.external {
+        background: url(http://www.urbandisplacement.org/sites/default/files/images/external_link.png) center right no-repeat;
+        padding-right: 13px;
+    }
+    #policy-info .panel-heading {
+      padding-top: 15px;
+      padding-bottom: 15px;
+      padding-left: 15px;
+    	padding-right: 20px;
+    	font-size: 16px;
+    	font-weight: bold;
+      background-color: #c8d8e7;
+      color: #043361;
+      font-family: 'Open Sans', sans-serif;
+    }
+    #policy-info .panel-footer {
+      padding-top: 20px;
+      padding-bottom: 15px;
+      background-color: #c8d8e7;
+      color: #043361;
+      font-family: 'Open Sans', sans-serif;
+    }
+    #policy-info .panel-heading:hover {
+    	cursor: pointer;
+    }
+    #policy-info .list-group {
+      margin-top: 0px;
+      padding-left: 12px;
+      /* --- */
+
+    }
+    #policy-info .list-group-item {
+    	padding-top: 4px;
+    	padding-bottom: 4px;
+      padding-right: 4px;
+
+      list-style-position:inside;
+      list-style:none;
+      /* --- */
+      border-bottom: 1px solid black;
+
+    }
+
+    /* close button */
+    .close {
+      font-size: 20px;
+      font-weight: bold;
+      line-height: 18px;
+      color: #000000;
+      text-shadow: 0 1px 0 #ffffff;
+      opacity: 0.2;
+      filter: alpha(opacity=20);
+      text-decoration: none;
+      padding-right: 5px;
+      float: right;
+    }
+    .close:hover {
+      color: #000000;
+      text-decoration: none;
+      opacity: 0.4;
+    }
+
+    /* overrides default style for legends */
+    #map .cartodb-legend-stack {
+    	right: 30px;
+    	width: 280px;
+    }
+    #map .cartodb-legend-stack .cartodb-legend .legend-title {
+    	font-family: 'Open Sans', sans-serif;
+    	color: black;
+    	font-size: 12px;
+    	font-weight: bold;
+    	text-transform: none;
+    }
+    #map .cartodb-legend-stack .cartodb-legend li {
+    	font-family: 'Open Sans', sans-serif;
+    	color: black;
+    	font-size: 12px;
+    	font-weight: normal;
+    	text-transform: none;
+    }
+    #map .cartodb-legend-stack .cartodb-legend li .bullet {
+    	height: 10px;
+    	width: 10px;
+    }
+    #map div.cartodb-legend-stack div.cartodb-legend li.min {
+    	float: left;
+    	width: 20%;
+    	text-align: center;
+    }
+    #map div.cartodb-legend-stack div.cartodb-legend li.median {
+    	float: left;
+    	width: 60%;
+    	text-align: center;
+    }
+    #map div.cartodb-legend-stack div.cartodb-legend li.max {
+    	float: right;
+    	width: 20%;
+    	text-align: center;
+    }
+
+    /* overrides default style for tooltips */
+    #map .cartodb-tooltip-content {
+    	padding: 6px;
+    }
+    #map .cartodb-tooltip-content p {
+    	font-family: 'Open Sans', sans-serif;
+    	font-size: 11px;
+    }
+    #map .cartodb-searchbox .text {
+    	font-family: 'Open Sans', sans-serif;
+    	font-size: 12px;
+    }
+
+    /* overrides default style for zoom icons */
+    #map .cartodb-zoom {
+    	position: absolute;
+    	right: 35px;
+    }
+
+    /* add scrolling to bootstrap menus */
+    .scrollable-menu {
+        height: auto;
+        max-height: 450px;
+        overflow-x: hidden;
+    }
+
+    #layerSelectionContainer {
+        position: absolute;
+        top: 22px;
+        right: 100px;
+        padding: 0px;
+        left: auto;
+    }
+
+    #geoSelectionContainer {
+        position: absolute;
+        top: 68px;
+        right: 100px;
+        padding: 0px;
+        left: auto;
+    }
+
+    @media only screen
+    and (max-width: 380px) {
+
+    	.mobile-hide {
+    		display: none;
+    	}
+    	#topBanner {
+    		display: none;
+    	}
+    	#mapContainer {
+    		height: 400px;
+    	}
+    	#policy-info {
+    		width: 90%;
+    		top: 350px;
+    		margin: 0 auto;
+    	}
+    	div .cartodb-legend-stack {
+    		visibility: hidden;
+    	}
+    	#layerSelectionContainer {
+    		display: none;
+    	}
+    	#geoSelectionContainer {
+    		display: none;
+    	}
+    	div.expand-map {
+    		display: none;
+    	}
+    }
+
+
+    </style>
   </body>
 </html>
