@@ -112,13 +112,95 @@
 var policy_to_legend = {
   "Mobile home rent control": "mobile_home-legend",
   "Community Land Trusts": "land_trusts-legend",
-  "Total": "total-legend"
+  "Number of anti-displacement policies": "total-legend",
+
+
+  "First source hiring": "fsh-legend",
+  "Density bonus ordinance": "dbo-legend",
+  "Inclusionary zoning": "iz-legend",
+  "Housing trust fund": "htf-legend",
+  "Commercial linkage fee": "clf-legend",
+  "Jobs-housing linkage fee": "jhl-legend",
+  "Foreclosure assistance": "fa-legend",
+  "Condominium conversion regulations": "ccr-legend",
+  "First source hiring": "fsh-legend",
+  "SRO preservation": "srop-legend",
+  "Rent Review Board and/or Mediation": "rrbm-legend",
+  "Rent Stabilization or Rent Control": "rsrc-legend",
+  "Just Cause Eviction Ordinance": "jceo-legend"
+
 }
 </script>
 <div id="map">
-  <div class="cartodb-legend color choropleth">
-
+<div class="cartodb-legend color choropleth">
 <ul class="legend-list" id="legend">
+  <div id="jceo -legend" class="legend-section" style="display: none">
+    <span class="legend-title">Just Cause Eviction Ordinance</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="rsrc-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Rent Stabilization or Rent Control</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="rrbm-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Rent Review Board and/or Mediation</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="srop-legend" class="legend-section" style="display: none">
+    <span class="legend-title">SRO preservation</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="fsh-legend" class="legend-section" style="display: none">
+    <span class="legend-title">First source hiring</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="ccr-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Condominium conversion regulations</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="fa-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Foreclosure assistance</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="jhl-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Jobs-housing linkage fee</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="clf-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Commercial linkage fee</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="htf-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Housing trust fund</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="iz-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Inclusionary zoning</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="dbo-legend" class="legend-section" style="display: none">
+    <span class="legend-title">Density bonus ordinance</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+  <div id="fsh-legend" class="legend-section" style="display: none">
+    <span class="legend-title">First source hiring</span>
+      <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
+      <li><span class="bullet" style="background-color: #2e5387;"></span> No</li>
+  </div>
+
+  <!-- asdfasdfadf -->
   <div id="mobile_home-legend" class="legend-section" style="display: none">
     <span class="legend-title">Mobile home rent control</span>
       <li><span class="bullet" style="background-color: #ffcc00;"></span> Yes</li>
@@ -210,16 +292,150 @@ filter.onAdd = function(map) {
   this._div.innerHTML = `
   Select Policy: <br>
   <select id="policy" class="custom-select" onchange="updateDataset()">
-    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/36c6c861-c90b-4743-a8ce-905a047db2a2/viz.json">Total</option>
-    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/96929dc2-ad89-4122-ad2e-bbd03ac70c71/viz.json">Mobile home rent control</option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/36c6c861-c90b-4743-a8ce-905a047db2a2/viz.json">Number of anti-displacement policies</option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/96929dc2-ad89-4122-ad2e-bbd03ac70c71/viz.json"> Mobile home rent control</option>
     <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/1edf7c2e-9d2f-4789-b54e-a9a557e1fa8b/viz.json"> Community Land Trusts </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/36260e5d-5f10-48fe-942b-f7df7fd60c0f/viz.json"> First source hiring </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/c9dab0bb-44f6-4208-9bc4-bbebea64a9a6/viz.json"> Density bonus ordinance </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/953c9396-f216-43f8-9f93-ebb568719fff/viz.json"> Inclusionary zoning </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/e2344114-461f-4a2a-a0c2-399e8cba2d27/viz.json"> Housing trust fund </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/0335561c-49ab-4db9-b63c-615db7cea6aa/viz.json"> Commercial linkage fee </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/99edc0d8-740b-4fca-9448-41f165ae2344/viz.json"> Jobs-housing linkage fee </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/8afccdb2-bd15-4b20-aeb0-5a8ee90239f6/viz.json"> Foreclosure assistance </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/813ecc1c-f3c0-4dee-9a57-5c7f290ae4c9/viz.json"> Condominium conversion regulations </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/36260e5d-5f10-48fe-942b-f7df7fd60c0f/viz.json"> First source hiring </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/87c1e5e1-1eff-45f7-9b3a-3037400a6ca5/viz.json"> SRO preservation </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/17599a2a-e015-400c-92a2-b5ceea787370/viz.json"> Rent Review Board and/or Mediation </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/d6a634e9-d23a-46cd-be82-3cce76d883e5/viz.json"> Rent Stabilization or Rent Control </option>
+    <option value="https://cci-displacement.cartodb.com/u/cci-displacement/api/v2/viz/54aceec3-2654-4bd2-9605-fc4c51512cbc/viz.json"> Just Cause Eviction Ordinance </option>
   </select>
   Select City: <br>
   <select id="city" class="custom-select" onchange="updateCity()">
-    <option value="Berkeley"> Berkeley </option>
-    <option value="San Francisco"> San Francisco </option>
-    <option value="San Jose"> San Jose </option>
-    <option value="Alameda"> Alameda </option>
+  <option value="Alameda">Alameda</option>
+  <option value="Alameda County Unincorporated">Alameda County Unincorporated</option>
+  <option value="Albany">Albany</option>
+  <option value="American Canyon">American Canyon</option>
+  <option value="Antioch">Antioch</option>
+  <option value="Atherton">Atherton</option>
+  <option value="Belmont">Belmont</option>
+  <option value="Belvedere">Belvedere</option>
+  <option value="Benicia">Benicia</option>
+  <option value="Berkeley">Berkeley</option>
+  <option value="Brentwood">Brentwood</option>
+  <option value="Brisbane">Brisbane</option>
+  <option value="Burlingame">Burlingame</option>
+  <option value="Calistoga">Calistoga</option>
+  <option value="Campbell">Campbell</option>
+  <option value="Capitola">Capitola</option>
+  <option value="Citrus Heights">Citrus Heights</option>
+  <option value="Clayton">Clayton</option>
+  <option value="Cloverdale">Cloverdale</option>
+  <option value="Colma">Colma</option>
+  <option value="Concord">Concord</option>
+  <option value="Contra Costa County Unincorporated">Contra Costa County Unincorporated</option>
+  <option value="Corte Madera">Corte Madera</option>
+  <option value="Cotati">Cotati</option>
+  <option value="Cupertino">Cupertino</option>
+  <option value="Daly City">Daly City</option>
+  <option value="Danville">Danville</option>
+  <option value="Davis">Davis</option>
+  <option value="Dixon">Dixon</option>
+  <option value="Dublin">Dublin</option>
+  <option value="East Palo Alto">East Palo Alto</option>
+  <option value="El Cerrito">El Cerrito</option>
+  <option value="Elk Grove">Elk Grove</option>
+  <option value="Emeryville">Emeryville</option>
+  <option value="Escalon">Escalon</option>
+  <option value="Fairfax">Fairfax</option>
+  <option value="Fairfield">Fairfield</option>
+  <option value="Folsom">Folsom</option>
+  <option value="Foster City">Foster City</option>
+  <option value="Fremont">Fremont</option>
+  <option value="Galt">Galt</option>
+  <option value="Gilroy">Gilroy</option>
+  <option value="Half Moon Bay">Half Moon Bay</option>
+  <option value="Hayward">Hayward</option>
+  <option value="Healdsburg">Healdsburg</option>
+  <option value="Hercules">Hercules</option>
+  <option value="Hillsborough">Hillsborough</option>
+  <option value="Isleton">Isleton</option>
+  <option value="Lafayette">Lafayette</option>
+  <option value="Larkspur">Larkspur</option>
+  <option value="Lathrop">Lathrop</option>
+  <option value="Livermore">Livermore</option>
+  <option value="Lodi">Lodi</option>
+  <option value="Los Altos">Los Altos</option>
+  <option value="Los Altos Hills">Los Altos Hills</option>
+  <option value="Los Gatos">Los Gatos</option>
+  <option value="Manteca">Manteca</option>
+  <option value="Martinez">Martinez</option>
+  <option value="Menlo Park">Menlo Park</option>
+  <option value="Mill Valley">Mill Valley</option>
+  <option value="Millbrae">Millbrae</option>
+  <option value="Milpitas">Milpitas</option>
+  <option value="Monte Sereno">Monte Sereno</option>
+  <option value="Moraga">Moraga</option>
+  <option value="Morgan Hill">Morgan Hill</option>
+  <option value="Mountain View">Mountain View</option>
+  <option value="Napa">Napa</option>
+  <option value="Newark">Newark</option>
+  <option value="Novato">Novato</option>
+  <option value="Oakland">Oakland</option>
+  <option value="Oakley">Oakley</option>
+  <option value="Orinda">Orinda</option>
+  <option value="Pacifica">Pacifica</option>
+  <option value="Palo Alto">Palo Alto</option>
+  <option value="Petaluma">Petaluma</option>
+  <option value="Piedmont">Piedmont</option>
+  <option value="Pinole">Pinole</option>
+  <option value="Pittsburg">Pittsburg</option>
+  <option value="Pleasant Hill">Pleasant Hill</option>
+  <option value="Pleasanton">Pleasanton</option>
+  <option value="Portola Valley">Portola Valley</option>
+  <option value="Redwood City">Redwood City</option>
+  <option value="Richmond">Richmond</option>
+  <option value="Rio Vista">Rio Vista</option>
+  <option value="Ripon">Ripon</option>
+  <option value="Rohnert Park">Rohnert Park</option>
+  <option value="Ross">Ross</option>
+  <option value="Sacramento">Sacramento</option>
+  <option value="San Anselmo">San Anselmo</option>
+  <option value="San Bruno">San Bruno</option>
+  <option value="San Carlos">San Carlos</option>
+  <option value="San Francisco">San Francisco</option>
+  <option value="San Jose">San Jose</option>
+  <option value="San Leandro">San Leandro</option>
+  <option value="San Mateo">San Mateo</option>
+  <option value="San Pablo">San Pablo</option>
+  <option value="San Rafael">San Rafael</option>
+  <option value="San Ramon">San Ramon</option>
+  <option value="Santa Clara">Santa Clara</option>
+  <option value="Santa Cruz">Santa Cruz</option>
+  <option value="Santa Cruz County Unincorporated">Santa Cruz County Unincorporated</option>
+  <option value="Santa Rosa">Santa Rosa</option>
+  <option value="Saratoga">Saratoga</option>
+  <option value="Sausalito">Sausalito</option>
+  <option value="Scotts Valley">Scotts Valley</option>
+  <option value="Sebastopol">Sebastopol</option>
+  <option value="Sonoma">Sonoma</option>
+  <option value="South San Francisco">South San Francisco</option>
+  <option value="St. Helena">St. Helena</option>
+  <option value="Stockton">Stockton</option>
+  <option value="Suisun City">Suisun City</option>
+  <option value="Sunnyvale">Sunnyvale</option>
+  <option value="Tiburon">Tiburon</option>
+  <option value="Tracy">Tracy</option>
+  <option value="Union City">Union City</option>
+  <option value="Vacaville">Vacaville</option>
+  <option value="Vallejo">Vallejo</option>
+  <option value="Walnut Creek">Walnut Creek</option>
+  <option value="Watsonville">Watsonville</option>
+  <option value="West Sacramento">West Sacramento</option>
+  <option value="Windsor">Windsor</option>
+  <option value="Winters">Winters</option>
+  <option value="Woodland">Woodland</option>
+  <option value="Woodside">Woodside</option>
+  <option value="Yountville">Yountville</option>
   </select>
   `
   return this._div;
@@ -454,11 +670,128 @@ addPanel(map);
       }
 
       function zoomToCity() {
-        var cityCoords = {
-          "San Francisco": [37.7749, -122.4194, 13],
-          "Alameda": [37.7652, -122.2416, 13],
-          "San Jose": [37.3382, -121.8863, 13]
-        }
+        var cityCoords = {'Alameda': [37.6090291, -121.899142, 13],
+ 'Albany': [37.88687, -122.2977475, 13],
+ 'American Canyon': [38.223457, -122.227043071235, 13],
+ 'Antioch': [38.0049214, -121.805789, 13],
+ 'Atherton': [37.4613272, -122.197743, 13],
+ 'Belmont': [37.5202145, -122.2758008, 13],
+ 'Belvedere': [37.8727044, -122.4644171, 13],
+ 'Benicia': [38.049365, -122.1585777, 13],
+ 'Berkeley': [37.8708393, -122.2728639, 13],
+ 'Brentwood': [37.9317766, -121.6960266, 13],
+ 'Brisbane': [37.6807661, -122.3999715, 13],
+ 'Burlingame': [37.5841026, -122.3660825, 13],
+ 'Calistoga': [38.5787966, -122.5797054, 13],
+ 'Campbell': [37.2883259, -121.9456328, 13],
+ 'Capitola': [36.9762927, -121.9540577, 13],
+ 'Citrus Heights': [38.7071247, -121.2810611, 13],
+ 'Clayton': [37.9410341, -121.9357925, 13],
+ 'Cloverdale': [38.776218, -122.993008186661, 13],
+ 'Colma': [37.6768779, -122.459695, 13],
+ 'Concord': [37.9768525, -122.0335624, 13],
+ 'Corte Madera': [37.9254806, -122.5274755, 13],
+ 'Cotati': [38.3266798, -122.7068441, 13],
+ 'Cupertino': [37.3228934, -122.0322895, 13],
+ 'Daly City': [37.7057671, -122.4619205, 13],
+ 'Danville': [37.8215929, -121.9999606, 13],
+ 'Davis': [38.545379, -121.7445835, 13],
+ 'Dixon': [38.4454641, -121.8232958, 13],
+ 'Dublin': [37.7021521, -121.9357918, 13],
+ 'East Palo Alto': [37.4688273, -122.1410751, 13],
+ 'El Cerrito': [37.9154056, -122.301411, 13],
+ 'Elk Grove': [38.4087993, -121.3716178, 13],
+ 'Emeryville': [37.8314089, -122.2865266, 13],
+ 'Escalon': [37.7974273, -120.9966033, 13],
+ 'Fairfax': [37.9872935, -122.5879674, 13],
+ 'Fairfield': [38.2493581, -122.0399663, 13],
+ 'Folsom': [38.6779591, -121.1760583, 13],
+ 'Foster City': [37.5600336, -122.2688522, 13],
+ 'Fremont': [37.5482697, -121.9885719, 13],
+ 'Galt': [38.3012325, -121.331037246621, 13],
+ 'Gilroy': [37.0065078, -121.5631723, 13],
+ 'Half Moon Bay': [37.4635519, -122.4285862, 13],
+ 'Hayward': [37.6688205, -122.0807964, 13],
+ 'Healdsburg': [38.610516, -122.881340743805, 13],
+ 'Hercules': [38.0171441, -122.2885808, 13],
+ 'Hillsborough': [37.5527255, -122.330695496154, 13],
+ 'Isleton': [38.157785, -121.593220640496, 13],
+ 'Lafayette': [37.8857582, -122.1180201, 13],
+ 'Larkspur': [37.9340915, -122.5352539, 13],
+ 'Lathrop': [37.8227046, -121.27661, 13],
+ 'Livermore': [37.6820583, -121.7680531, 13],
+ 'Lodi': [38.097198, -121.387849646574, 13],
+ 'Los Altos': [37.3790629, -122.116578, 13],
+ 'Los Altos Hills': [37.3796627, -122.1374637, 13],
+ 'Los Gatos': [37.226611, -121.9746797, 13],
+ 'Manteca': [37.7986184, -121.2117148, 13],
+ 'Martinez': [38.0138934, -122.1338674, 13],
+ 'Menlo Park': [37.4538274, -122.1821871, 13],
+ 'Mill Valley': [37.9060368, -122.5449763, 13],
+ 'Millbrae': [37.5985468, -122.3871942, 13],
+ 'Milpitas': [37.4282724, -121.9066238, 13],
+ 'Monte Sereno': [37.236333, -121.992458, 13],
+ 'Moraga': [37.834897, -122.12883, 13],
+ 'Morgan Hill': [37.130408, -121.6544974, 13],
+ 'Mountain View': [37.3893889, -122.0832101, 13],
+ 'Napa': [38.2971367, -122.2855293, 13],
+ 'Newark': [37.5296593, -122.0402399, 13],
+ 'Novato': [38.1061979, -122.5681191, 13],
+ 'Oakland': [37.8044557, -122.2713563, 13],
+ 'Oakley': [37.9974219, -121.7124536, 13],
+ 'Orinda': [37.8771476, -122.1796888, 13],
+ 'Pacifica': [37.6138253, -122.4869194, 13],
+ 'Palo Alto': [37.4443293, -122.1598465, 13],
+ 'Petaluma': [38.270022, -122.606122413043, 13],
+ 'Piedmont': [37.8243715, -122.231635, 13],
+ 'Pinole': [38.0043667, -122.2988587, 13],
+ 'Pittsburg': [38.0181745, -121.8901232, 13],
+ 'Pleasant Hill': [37.9479786, -122.0607963, 13],
+ 'Pleasanton': [37.6624312, -121.8746789, 13],
+ 'Portola Valley': [37.3841067, -122.2352443, 13],
+ 'Redwood City': [37.4863239, -122.2325233, 13],
+ 'Richmond': [37.9357576, -122.3477486, 13],
+ 'Rio Vista': [38.1557502, -121.6913439, 13],
+ 'Ripon': [37.741595, -121.1243828, 13],
+ 'Rohnert Park': [38.3396367, -122.7010984, 13],
+ 'Ross': [37.9624239, -122.5549775, 13],
+ 'Sacramento': [38.5815719, -121.4943996, 13],
+ 'San Anselmo': [37.9744323, -122.5615032, 13],
+ 'San Bruno': [37.6304904, -122.4110835, 13],
+ 'San Carlos': [37.504936, -122.2618236, 13],
+ 'San Francisco': [37.7792808, -122.4192363, 13],
+ 'San Jose': [37.3361905, -121.8905833, 13],
+ 'San Leandro': [37.7249296, -122.1560768, 13],
+ 'San Mateo': [37.496904, -122.3330573, 13],
+ 'San Pablo': [37.9621457, -122.3455263, 13],
+ 'San Rafael': [37.9735346, -122.5310874, 13],
+ 'San Ramon': [37.7799273, -121.9780153, 13],
+ 'Santa Clara': [37.3541132, -121.9551744, 13],
+ 'Santa Cruz': [36.9749416, -122.0285259, 13],
+ 'Santa Rosa': [38.4404675, -122.7144314, 13],
+ 'Saratoga': [37.2638324, -122.0230146, 13],
+ 'Sausalito': [37.8590272, -122.4854694, 13],
+ 'Scotts Valley': [37.0510595, -122.0146841, 13],
+ 'Sebastopol': [38.3845125, -122.833250158374, 13],
+ 'Sonoma': [38.5110803, -122.8473388, 13],
+ 'South San Francisco': [37.6549493, -122.4081251, 13],
+ 'St. Helena': [38.5052288, -122.4700424, 13],
+ 'Stockton': [37.9577016, -121.2907796, 13],
+ 'Suisun City': [38.24690555, -121.971724216502, 13],
+ 'Sunnyvale': [37.3688301, -122.0363496, 13],
+ 'Tiburon': [37.8734371, -122.4566122, 13],
+ 'Tracy': [37.7396513, -121.4252227, 13],
+ 'Union City': [37.5963232, -122.0816297, 13],
+ 'Vacaville': [38.3565773, -121.9877444, 13],
+ 'Vallejo': [38.1040864, -122.2566367, 13],
+ 'Walnut Creek': [37.9020731, -122.0618702, 13],
+ 'Watsonville': [36.9092773, -121.7529071, 13],
+ 'West Sacramento': [38.5804609, -121.530234, 13],
+ 'Windsor': [38.5247045, -122.828243430838, 13],
+ 'Winters': [38.5249065, -121.9708017, 13],
+ 'Woodland': [38.6786109, -121.7733285, 13],
+ 'Woodside': [37.4299388, -122.2538557, 13],
+ 'Yountville': [38.395445, -122.360172550506, 13]}
         var coords = cityCoords[document.getElementById("city").value]
         var lat = coords[0]
         var long = coords[1]
